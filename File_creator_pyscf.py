@@ -49,7 +49,7 @@ largeconf = False
 # RESOLVED CMS --> 9
 Type = 1
 # Ouput name
-mldfile = 'molden.molden'
+mldfile = 'test_total_pyscf.molden'
 punfile = 'molpro.pun'
 outfile = 'total_pyscf.dat'
 

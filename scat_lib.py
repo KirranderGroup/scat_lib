@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess
-from pyscf import gto, mcscf, scf, fci, ci
+from pyscf import gto, mcscf, scf, fci, ci, tools
 import molden_reader_nikola_pyscf as pymldreader
 import numpy as np
 
@@ -15,6 +15,7 @@ if scat_dir not in sys.path:
     sys.path.append(mrh_dir)
 
 from mrh.my_pyscf.fci.csfstring import CSFTransformer
+from makerdm import get_dms, _make_rdm12_on_mo
 
 types = {'total': '1', 
          'elastic':'2',
@@ -179,6 +180,26 @@ def run_scattering(
         one_rdm_file,
         two_rdm_file,
         molden_file,
+        type=type,
+        log_file='scat.log',
+        q_range = q_range,
+        q_points = q_points,
+        cutoffcentre = cutoffcentre,
+        cutoffz = cutoffz,
+        cutoffmd = cutoffmd,
+        state1 = state1,
+        state2 = state2,
+        state3 = state3)
+
+    with open(log_file, 'w') as f:
+        subprocess.run(['Main.exe'], stdout=f)
+    return np.loadtxt(f'{file_name}')
+
+def run_scattering_pyscf(
+        casscf,
+        mf,
+        file_name,
+        orbital_type = 'HF',
         type='total',
         log_file='scat.log',
         q_range = (1E-10,250),
@@ -188,21 +209,82 @@ def run_scattering(
         cutoffmd = 1e-20,
         state1 = 1,
         state2 = 1,
-        state3 = 1)
-    with open(log_file, 'w') as f:
-        subprocess.run(['Main.exe'], stdout=f)
-    return 
+        state3 = 1
+        ):
+    if orbital_type == 'HF':
+        tools.molden.dump_scf(mf, f'{file_name}.molden')
+    elif orbital_type == 'CASSCF':
+        tools.molden.from_mcscf(casscf, f'{file_name}.molden')
+    
+    _ci = casscf.ci
+    nelecas = casscf.nelecas
+    ncas = casscf.ncas
+    ncore = casscf.ncore
+    nmo = casscf.mo_coeff.shape[1]
 
-def run_scattering_cas(
-        casscf,
+    casdm1, casdm2 = casscf.fcisolver.make_rdm12(_ci, ncas, nelecas)
+    dm1, dm2 = _make_rdm12_on_mo(casdm1, casdm2, ncore, ncas, nmo)
 
-):
-    return
+    no_mos = dm1.shape[0]
+
+    pthresh=1e-17
+
+    with open(f'1rdm_{file_name}.txt', 'w') as f:
+        for i in range(no_mos):
+            for j in range(no_mos):
+                if np.abs(dm1[i,j]) > pthresh:
+                    f.write(f"{i+1: 3d}  {j+1: 3d}  {dm1[i, j]}\n")
+
+
+    with open(f'2rdm_{file_name}.txt', 'w') as f:
+        for i in range(no_mos):
+            for j in range(no_mos):
+                for k in range(no_mos):
+                    for l in range(no_mos):
+                        if np.abs(dm2[i, j, k, l]) > pthresh:
+                            f.write(
+                                f"{i+1: 3d}  {j+1: 3d}  {k+1: 3d}  {l+1: 3d}  {dm2[i, j, k, l]}\n"
+                            )
+
+    result = run_scattering(file_name, 
+                            f'1rdm_{file_name}.txt', 
+                            f'2rdm_{file_name}.txt', 
+                            f'{file_name}.molden',
+                            type=type,
+                            log_file=log_file,
+                            q_range = q_range,
+                            q_points = q_points,
+                            cutoffcentre = cutoffcentre,
+                            cutoffz = cutoffz,
+                            cutoffmd = cutoffmd,
+                            state1 = state1,
+                            state2 = state2,
+                            state3 = state3)
+    return result
+
+
+    
+
 
 if __name__ in "__main__":
-    run_scattering(
-        'test_total',
-        '1rdm_pyscf.txt',
-        '2rdm_pyscf.txt',
-        'molden.molden',
+    mol = gto.Mole(atom = 'Be 0 0 0', basis = '3-21g', symmetry = False, spin = 0, charge = 0 , cart=True)
+    mf = scf.HF(mol)
+    mf.kernel()
+    casscf = mcscf.CASSCF(mf, 9, 4)
+    casscf.kernel()
+    run_scattering_pyscf(
+        casscf,
+        mf,
+        'test_total_pyscf',
+        orbital_type = 'CASSCF',
+        type='total',
+        log_file='scat.log',
+        q_range = (1E-10,250),
+        q_points = 1000,
+        cutoffcentre = 1E-2,
+        cutoffz = 1e-20,
+        cutoffmd = 1e-20,
+        state1 = 1,
+        state2 = 1,
+        state3 = 1
     )
