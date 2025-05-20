@@ -4,18 +4,18 @@ import subprocess
 from pyscf import gto, mcscf, scf, fci, ci, tools
 import molden_reader_nikola_pyscf as pymldreader
 import numpy as np
-
-
-mrh_dir = '/u/ajmk/sann8252/PySCF'
-if mrh_dir not in sys.path:
-    sys.path.append(mrh_dir)
+from copy import deepcopy 
 
 scat_dir = '/u/ajmk/sann8252/PyXSCAT_Patrick/src'
 if scat_dir not in sys.path:
-    sys.path.append(mrh_dir)
+    sys.path.append(scat_dir)
+
+from ci_to_2rdm import update_ci_coeffs, read_ci_file
+
 
 from mrh.my_pyscf.fci.csfstring import CSFTransformer
 from makerdm import get_dms, _make_rdm12_on_mo
+
 
 types = {'total': '1', 
          'elastic':'2',
@@ -262,7 +262,64 @@ def run_scattering_pyscf(
                             state3 = state3)
     return result
 
+def run_scattering_csf(
+        csf,
+        nalpha,
+        nbeta,
+        norb,
+        spin_mult,
+        casscf,
+        mf,
+        file_name,
+        orbital_type = 'HF',
+        type='total',
+        log_file='scat.log',
+        q_range = (1E-10,250),
+        q_points = 1000,
+        cutoffcentre = 1E-2,
+        cutoffz = 1e-20,
+        cutoffmd = 1e-20,
+        state1 = 1,
+        state2 = 1,
+        state3 = 1
+        ):
+    transformer = CSFTransformer(norb, nalpha, nbeta, spin_mult)
+    dets = transformer.vec_csf2det(csf)
+    occslst = fci.cistring.gen_occslst(range(casscf.ncas), (nalpha + nbeta) // 2)
+    alpha = []
+    beta = []
 
+    for i, occs_alpha in enumerate(occslst.tolist()):
+        for j, occs_beta in enumerate(occslst.tolist()):
+            alpha.append(occs_alpha)
+            beta.append(occs_beta)
+    alpha_read, beta_read, _  = read_ci_file('321gci_CASCI.txt', sort_by_ci=False)
+    print(alpha_read)
+    casscf_copy = deepcopy(casscf)
+    alpha = np.array(alpha)
+    beta = np.array(beta)
+    print(alpha)
+    print(dets)
+    update_ci_coeffs(alpha_read, beta_read, dets.flatten(), casscf_copy, update = True)
+
+    result = run_scattering_pyscf(
+        casscf_copy,
+        mf,
+        file_name,
+        orbital_type = orbital_type,
+        type=type,
+        log_file=log_file,
+        q_range = q_range,
+        q_points = q_points,
+        cutoffcentre = cutoffcentre,
+        cutoffz = cutoffz,
+        cutoffmd = cutoffmd,
+        state1 = state1,
+        state2 = state2,
+        state3 = state3
+    )
+    return result
+    
     
 
 
@@ -272,7 +329,7 @@ if __name__ in "__main__":
     mf.kernel()
     casscf = mcscf.CASSCF(mf, 9, 4)
     casscf.kernel()
-    run_scattering_pyscf(
+    pyscf_result = run_scattering_pyscf(
         casscf,
         mf,
         'test_total_pyscf',
@@ -288,3 +345,14 @@ if __name__ in "__main__":
         state2 = 1,
         state3 = 1
     )
+    transformer = CSFTransformer(9,2,2,1)
+    csf_result = run_scattering_csf(
+        transformer.vec_det2csf(casscf.ci),
+        2,
+        2,
+        9,
+        1,
+        casscf,
+        mf,
+        'csf_test')
+    print((csf_result - pyscf_result).sum())

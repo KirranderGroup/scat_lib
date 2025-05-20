@@ -10,10 +10,10 @@ False
 1e-10 250 1000 
 1
 1 1 1
-test_total_pyscf
+csf_test
 False
 False
 False
 readrdm
-1rdm_test_total_pyscf.txt
-2rdm_test_total_pyscf.txt
+1rdm_csf_test.txt
+2rdm_csf_test.txt
