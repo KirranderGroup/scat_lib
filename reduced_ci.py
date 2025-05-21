@@ -149,6 +149,9 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
     
     @reduced_csf.setter
     def reduced_csf(self, value):
+
+        assert len(value) == self.nparams, f'Dimension of supplied array is not {self.nparams}'
+
         if not isinstance(value, np.ndarray):
             raise TypeError("reduced_csf must be a numpy array.")
         
