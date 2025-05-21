@@ -3,3 +3,4 @@ This python library combines a suite of tools used to calculate X-ray scattering
 
 It also allows the calculation of scattering using configuration state functions (CSF).
 
+## `ci_to_2rdm.py`

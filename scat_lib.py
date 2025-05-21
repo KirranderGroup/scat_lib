@@ -211,6 +211,50 @@ def run_scattering_pyscf(
         state2 = 1,
         state3 = 1
         ):
+    
+    """
+    Runs scattering calculation on a given one_rdm and two_rdm file.
+
+    Parameters
+    ----------
+    casscf : pyscf.mcscf.CASSCF
+        The CASSCF object containing the CI coefficients and FCISolver.
+    mf : pyscf.scf.hf.SCF
+        The mean-field object containing the molecular information.
+    file_name : str
+        The output scattering file name
+    orbital_type : str
+        The type of orbitals to be used, either 'HF' or 'CASSCF'.
+    type : str, (total, elastic)
+        type of scattering to be computed, defaults total
+    log_file : str
+        Path to the log file for scattering calculation
+    q_range : tuple
+        The range of q values for the scattering calculation.
+    q_points : int
+        The number of q points to be used in the calculation.
+    cutoffcentre : float
+        The cutoff value for the centre of the scattering calculation.
+    cutoffz : float
+        The cutoff value for the z component of the scattering calculation.
+    cutoffmd : float
+        The cutoff value for the md component of the scattering calculation.
+    state1 : int
+        The first state to be considered in the scattering calculation.
+    state2 : int
+        The second state to be considered in the scattering calculation.
+    state3 : int
+        The third state to be considered in the scattering calculation.
+    
+    Returns
+    -------
+    q : array_like
+        An array of q wave vector values, in a.u.
+    intensity : array_like
+        An array of intensity values at the corresponding q
+    """
+
+
     if orbital_type == 'HF':
         tools.molden.dump_scf(mf, f'{file_name}.molden')
     elif orbital_type == 'CASSCF':
@@ -283,6 +327,58 @@ def run_scattering_csf(
         state2 = 1,
         state3 = 1
         ):
+    """
+    Run scattering on a given CSF configuration.
+    Parameters
+    ----------
+    csf : list
+        The CSF configuration to be used for the scattering calculation.
+    nalpha : int
+        The number of alpha electrons in the active space.
+    nbeta : int
+        The number of beta electrons in the active space.
+    norb : int
+        The total number of orbitals in the system.
+    spin_mult : int
+        The spin multiplicity of the system.
+
+    casscf : pyscf.mcscf.CASSCF
+        The CASSCF object containing the CI coefficients and FCISolver.
+    mf : pyscf.scf.hf.SCF
+        The mean-field object containing the molecular information.
+    file_name : str
+        The output scattering file name
+    orbital_type : str
+        The type of orbitals to be used, either 'HF' or 'CASSCF'.
+    type : str, (total, elastic)
+        type of scattering to be computed, defaults total
+    log_file : str
+        Path to the log file for scattering calculation
+    q_range : tuple
+        The range of q values for the scattering calculation.
+    q_points : int
+        The number of q points to be used in the calculation.
+    cutoffcentre : float
+        The cutoff value for the centre of the scattering calculation.
+    cutoffz : float
+        The cutoff value for the z component of the scattering calculation.
+    cutoffmd : float
+        The cutoff value for the md component of the scattering calculation.
+    state1 : int
+        The first state to be considered in the scattering calculation.
+    state2 : int
+        The second state to be considered in the scattering calculation.
+    state3 : int
+        The third state to be considered in the scattering calculation.
+    
+    Returns
+    -------
+    q : array_like
+        An array of q wave vector values, in a.u.
+    intensity : array_like
+        An array of intensity values at the corresponding q
+    """
+
     transformer = CSFTransformer(norb, nalpha, nbeta, spin_mult)
     dets = transformer.vec_csf2det(csf)
     occslst = fci.cistring.gen_occslst(range(casscf.ncas), (nalpha + nbeta) // 2)

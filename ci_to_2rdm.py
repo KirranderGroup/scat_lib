@@ -15,6 +15,32 @@ from pyscf import gto, scf, mcscf, fci, ci
 
 
 def write_ci_file(file_name, casscf,nelec, ncas, tol=5E-5):
+    """
+    Writes CI (Configuration Interaction) coefficients to text files for a given CASSCF calculation.
+
+    This function generates two files:
+        1. '{file_name}_ci.txt': Contains all CI coefficients for all possible alpha and beta determinants.
+        2. '{file_name}_ci_large.txt': Contains CI coefficients larger than a specified tolerance.
+
+    Parameters
+    ----------
+    file_name : str
+        The base name for the output files (without extension).
+    casscf : object
+        The CASSCF object containing the CI coefficients and FCISolver.
+    nelec : tuple or int
+        Number of electrons (alpha, beta) in the active space.
+    ncas : int
+        Number of active orbitals.
+    tol : float, optional
+        Tolerance for selecting large CI coefficients (default is 5E-5).
+
+    Notes
+    -----
+    - The function assumes the presence of `casscf.ci` (CI coefficient matrix) and
+        `casscf.fcisolver.large_ci` (method to extract large CI coefficients).
+    - The output files list determinants as lists of occupied orbitals for alpha and beta spins.
+    """
     nelec = (2, 2)
     occslst = fci.cistring.gen_occslst(range(ncas), 4//2)
 
@@ -124,6 +150,32 @@ def update_ci_coeffs(alpha_det:np.array,
 
 
 def _make_rdm12_on_mo(casdm1, casdm2, ncore, ncas, nmo):
+    """
+    Constructs the one- and two-particle reduced density matrices (RDM1 and RDM2) in the molecular orbital (MO) basis.
+    Parameters
+    ----------
+    casdm1 : np.ndarray
+        The active-space (CAS) one-particle reduced density matrix of shape (ncas, ncas).
+    casdm2 : np.ndarray
+        The active-space (CAS) two-particle reduced density matrix of shape (ncas, ncas, ncas, ncas).
+    ncore : int
+        Number of core (fully occupied) orbitals.
+    ncas : int
+        Number of active (CAS) orbitals.
+    nmo : int
+        Total number of molecular orbitals.
+    Returns
+    -------
+    dm1 : np.ndarray
+        The one-particle RDM in the MO basis, shape (nmo, nmo).
+    dm2 : np.ndarray
+        The two-particle RDM in the MO basis, shape (nmo, nmo, nmo, nmo).
+    Notes
+    -----
+    - The function embeds the CAS RDMs into the full MO space, filling in the core contributions.
+    - Core orbitals are assumed to be doubly occupied.
+    """
+
     nocc = ncas + ncore
     dm1 = np.zeros((nmo,nmo))
     idx = np.arange(ncore)
@@ -143,6 +195,27 @@ def _make_rdm12_on_mo(casdm1, casdm2, ncore, ncas, nmo):
 
 
 def get_dms(casscf, state=0):
+    """
+    Compute the one- and two-particle reduced density matrices (RDMs) for a CASCI/CASSCF calculation.
+    Parameters
+    ----------
+    casscf : object
+        A CASSCF or CASCI object containing the wavefunction and molecular orbital information.
+    state : int, optional
+        The state index for which to compute the density matrices (default is 0).
+    Returns
+    -------
+    dm1 : numpy.ndarray
+        The one-particle reduced density matrix in the molecular orbital basis.
+    dm2 : numpy.ndarray
+        The two-particle reduced density matrix in the molecular orbital basis.
+    Notes
+    -----
+    This function extracts the CI vector and molecular orbital coefficients from the provided
+    CASSCF/CASCI object, computes the active-space RDMs using the FCI solver, and then
+    transforms them to the full molecular orbital basis.
+    """
+
     # calculates the dms for the CASCI calculation
     nelecas = casscf.nelecas
     ncas = casscf.ncas
@@ -159,6 +232,27 @@ def get_dms(casscf, state=0):
 
 
 def write_rdms(file,casscf,mf):
+    """
+    This function extracts the active space reduced density matrices from a CASSCF calculation,
+
+    Parameters
+    ----------
+    file : str
+        Base filename for output files. The function will write to '1rdm_{file}.txt' and '2rdm_{file}.txt'.
+    casscf : object
+        A CASSCF object containing the wavefunction, CI coefficients, and orbital information.
+    mf : object
+        A mean-field object (e.g., from PySCF) providing molecular orbital energies and coefficients.
+
+    Outputs
+    -------
+    1rdm_{file}.txt : file
+        Contains the non-zero elements of the 1-RDM in the MO basis.
+    2rdm_{file}.txt : file
+        Contains the non-zero elements of the 2-RDM in the MO basis.
+    """
+
+
     no_frozen = np.sum(mf.mo_energy < -1e6)
     print(no_frozen)
     nelecas = casscf.nelecas
