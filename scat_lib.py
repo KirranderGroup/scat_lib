@@ -146,7 +146,8 @@ def run_scattering(
         cutoffmd = 1e-20,
         state1 = 1,
         state2 = 1,
-        state3 = 1
+        state3 = 1,
+        clean_files=True
 ):
     """
     Runs scattering calculation on a given one_rdm and two_rdm file.
@@ -191,9 +192,21 @@ def run_scattering(
         state2 = state2,
         state3 = state3)
 
-    with open(log_file, 'w') as f:
-        subprocess.run(['Main.exe'], stdout=f)
-    return np.loadtxt(f'{file_name}')
+    # with open(log_file, 'w') as f:
+        #subprocess.run(['Main.exe'], stdout=f)
+    os.system(f'LD_LIBRARY_PATH=/opt/intel/oneapi/vpl/2022.0.0/lib:/opt/intel/oneapi/tbb/2021.5.1/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.5.1//libfabric/lib:/opt/intel/oneapi/mpi/2021.5.1//lib/release:/opt/intel/oneapi/mpi/2021.5.1//lib:/opt/intel/oneapi/mkl/2022.0.2/lib/intel64:/opt/intel/oneapi/itac/2021.5.0/slib:/opt/intel/oneapi/ipp/2021.5.2/lib/intel64:/opt/intel/oneapi/ippcp/2021.5.1/lib/intel64:/opt/intel/oneapi/ipp/2021.5.2/lib/intel64:/opt/intel/oneapi/dnnl/2022.0.2/cpu_dpcpp_gpu_dpcpp/lib:/opt/intel/oneapi/debugger/2021.5.0/gdb/intel64/lib:/opt/intel/oneapi/debugger/2021.5.0/libipt/intel64/lib:/opt/intel/oneapi/debugger/2021.5.0/dep/lib:/opt/intel/oneapi/dal/2021.5.3/lib/intel64:/opt/intel/oneapi/compiler/2022.0.2/linux/lib:/opt/intel/oneapi/compiler/2022.0.2/linux/lib/x64:/opt/intel/oneapi/compiler/2022.0.2/linux/lib/oclfpga/host/linux64/lib:/opt/intel/oneapi/compiler/2022.0.2/linux/compiler/lib/intel64_lin:/opt/intel/oneapi/ccl/2021.5.1/lib/cpu_gpu_dpcpp:/u/ajmk/sann8252/local/lib Main.exe > {log_file}')
+    result = np.loadtxt(f'{file_name}')
+    if clean_files:
+        subprocess.run(['rm', 'options.dat'])
+        subprocess.run(['rm', 'basis.dat'])
+        subprocess.run(['rm', 'MOs.dat'])
+        subprocess.run(['rm', '1rdm_' + file_name + '.txt'])
+        subprocess.run(['rm', '2rdm_' + file_name + '.txt'])
+        subprocess.run(['rm', '2rdm.txt'])
+        subprocess.run(['rm', file_name + '.molden'])
+        subprocess.run(['rm', file_name])
+    
+    return result
 
 def run_scattering_pyscf(
         casscf,
@@ -389,14 +402,11 @@ def run_scattering_csf(
         for j, occs_beta in enumerate(occslst.tolist()):
             alpha.append(occs_alpha)
             beta.append(occs_beta)
-    alpha_read, beta_read, _  = read_ci_file('321gci_CASCI.txt', sort_by_ci=False)
-    print(alpha_read)
+
     casscf_copy = deepcopy(casscf)
     alpha = np.array(alpha)
     beta = np.array(beta)
-    print(alpha)
-    print(dets)
-    update_ci_coeffs(alpha_read, beta_read, dets.flatten(), casscf_copy, update = True)
+    update_ci_coeffs(alpha, beta, dets.flatten(), casscf_copy, update = True)
 
     result = run_scattering_pyscf(
         casscf_copy,

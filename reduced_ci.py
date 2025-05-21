@@ -44,6 +44,7 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
 
     def __init__(self, mf_or_mol, ncas=0, nalpha = 0 , nbeta = 0, ncore=None, frozen=None):
         super().__init__(mf_or_mol, ncas = ncas, nelecas = (nalpha + nbeta), ncore = ncore, frozen = frozen)
+        self._mf = mf_or_mol
         self.nelec = (nalpha, nbeta)
         self.nalpha = nalpha
         self.nbeta = nbeta        
@@ -158,4 +159,33 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
         assert np.isclose(np.sum(expanded_csf**2), 1), 'Expanded CSF coefficients are not normalized!'
         self.csf = expanded_csf
 
+    def run_scattering(self, file_name, **kwargs):
+        """
+        Run the scattering calculation using the CI coefficients and CSF strings.
+        
+        Parameters
+        ----------
+        file_name : str
+            The name of the file containing the CI coefficients and CSF strings.
+        **kwargs : dict
+            Additional arguments to pass to the scattering function.
+        """
+        result = run_scattering_pyscf(self, self._mf, file_name, **kwargs)
+        return result
+
+    def run_scattering_csf(self, file_name, **kwargs):
+        """
+        Run the scattering calculation using the CI coefficients and CSF strings.
+        
+        Parameters
+        ----------
+        file_name : str
+            The name of the file containing the CI coefficients and CSF strings.
+        **kwargs : dict
+            Additional arguments to pass to the scattering function.
+        """
+        result = run_scattering_csf(self.csf, self.nalpha, self.nbeta, self.ncas, 1, self, self._mf, file_name, **kwargs)
+        
+        
+        return result
 

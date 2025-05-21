@@ -253,7 +253,7 @@ def _read_contractions(file):
             contraction_counter += len(ang)
     else:
         print("Something went wrong! Can't find [MO]")
-    print('size GTOS', np.size(GTOs))
+    #print('size GTOS', np.size(GTOs))
     return GTOs
 
 
@@ -330,10 +330,10 @@ def _read_MO(file, mo_cutoff):
     syms_array = np.array([float(i) for i in syms])
     occ_array=np.array([float(i) for i in occ])
     finalind=np.where(occ_array>0.0000000)
-    print('First 0 would work?', finalind)
+    #print('First 0 would work?', finalind)
     syms_array=syms_array[finalind]
     idx1 = np.argsort(syms_array)
-    print('previous order', syms)
+    #print('previous order', syms)
     syms_array = (syms_array - syms_array.astype(int)) * 1000 + syms_array.astype(int)
 
     idx = np.argsort(syms_array)
@@ -341,7 +341,7 @@ def _read_MO(file, mo_cutoff):
 
     mo = np.array(mo_table)
     syms_array = np.array([float(i) for i in syms])
-    print('after order', syms_array[idx])
+    #print('after order', syms_array[idx])
 
 #   mo = mo[idx, :]
 
@@ -350,7 +350,7 @@ def _read_MO(file, mo_cutoff):
 
     occ_array = np.array(occ)
     occ_array = occ_array[idx]
-    print('final occupation is', sum(occ_array), 'with ', np.size(idx))
+    #print('final occupation is', sum(occ_array), 'with ', np.size(idx))
 
     return (np.transpose(mo), occ_array, energy_array, syms_array)
 
