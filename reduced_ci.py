@@ -102,9 +102,14 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
         self._reduced_csf_inverse = inverse
         self._reduced_csf_reduction_factors = reduction_factors
         self._reduced_csf_unique_locs = unique_locs
-
+        self._nparams = len(unique_csf)
         return rescaled_csf, inverse
     
+
+    @property
+    def nparams(self):
+        return self._nparams
+
     @property
     def ncsf(self):
         return self._transformer.ncsf
@@ -185,7 +190,7 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
             Additional arguments to pass to the scattering function.
         """
         result = run_scattering_csf(self.csf, self.nalpha, self.nbeta, self.ncas, 1, self, self._mf, file_name, **kwargs)
-        
+
         
         return result
 
