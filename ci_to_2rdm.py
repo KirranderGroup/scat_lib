@@ -136,8 +136,12 @@ def update_ci_coeffs(alpha_det:np.array,
     casscf_cis = np.zeros_like(casscf.ci)
     
     for alpha, beta, ci in zip(alpha_det, beta_det, ci_coeff):
-        alpha_index = find_index(alpha.tolist())
-        beta_index = find_index(beta.tolist())
+        if type(alpha) == list:
+            alpha_index = find_index(alpha)
+            beta_index = find_index(beta)
+        else:
+            alpha_index = find_index(alpha.tolist())
+            beta_index = find_index(beta.tolist())
         casscf_cis[alpha_index, beta_index] = ci
 
     if update:

@@ -1,7 +1,7 @@
 from pyscf import gto, scf, mcscf, fci
 from mrh.my_pyscf.fci.csfstring import CSFTransformer
 import numpy as np
-from ci_to_2rdm import write_ci_file, read_ci_file, update_ci_coeffs
+from ci_to_2rdm import write_ci_file, read_ci_file, update_ci_coeffs, calc_energy
 from scat_lib import run_scattering, run_scattering_csf, run_scattering_pyscf
 
 class ReducedCASSCF(mcscf.mc1step.CASSCF):
@@ -121,6 +121,8 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
     @property
     def transformer(self):
         return self._transformer
+    
+
 
     @transformer.setter
     def transformer(self, value):
@@ -136,7 +138,9 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
         norm = np.sqrt(np.sum(value**2))
         if np.isclose(norm, 1):
             if len(value.flatten()) == self.transformer.ncsf:
-                self.csf = value           
+                self._csf = value
+                full_det = self.transformer.vec_csf2det(value)
+                self.update_ci(full_det.flatten())           
         else:
             raise ValueError("CSF coefficients are not normalized. Please normalize them before setting.")
     
@@ -166,6 +170,18 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
         print(np.sum(expanded_csf**2))
         assert np.isclose(np.sum(expanded_csf**2), 1), 'Expanded CSF coefficients are not normalized!'
         self.csf = expanded_csf
+
+
+    def calc_etot(self):
+        self.e_tot = calc_energy(self, self._mf, self.ci)
+        return self.e_tot
+
+    def update_ci(self, value):
+        norm = (value**2).sum()
+        assert np.isclose(norm, 1), f'Supplied CI Vector is not normalised! (Norm = {norm:.10f})'
+        _ = update_ci_coeffs(self.alpha_dets, self.beta_dets, value, self, update = True)
+        _ = self.calc_etot()
+    
 
     def run_scattering(self, file_name, **kwargs):
         """
