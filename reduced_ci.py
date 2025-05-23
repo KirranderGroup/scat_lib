@@ -3,6 +3,12 @@ from mrh.my_pyscf.fci.csfstring import CSFTransformer
 import numpy as np
 from ci_to_2rdm import write_ci_file, read_ci_file, update_ci_coeffs, calc_energy
 from scat_lib import run_scattering, run_scattering_csf, run_scattering_pyscf
+from fit_utils import generate_comparison_plot
+import matplotlib.pyplot as plt
+import colorcet as cc
+import seaborn as sns
+sns.set_palette(cc.glasbey_bw)
+
 
 class ReducedCASSCF(mcscf.mc1step.CASSCF):
     """
@@ -194,8 +200,8 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
         **kwargs : dict
             Additional arguments to pass to the scattering function.
         """
-        result = run_scattering_pyscf(self, self._mf, file_name, **kwargs)
-        return result
+        self._result = run_scattering_pyscf(self, self._mf, file_name, **kwargs)
+        return self._result
 
     def run_scattering_csf(self, file_name, **kwargs):
         """
@@ -208,8 +214,62 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
         **kwargs : dict
             Additional arguments to pass to the scattering function.
         """
-        result = run_scattering_csf(self.csf, self.nalpha, self.nbeta, self.ncas, 1, self, self._mf, file_name, **kwargs)
+        self._result = run_scattering_csf(self.csf, self.nalpha, self.nbeta, self.ncas, 1, self, self._mf, file_name, **kwargs)
 
         
-        return result
+        return self._result
 
+    def generate_comparison_plot(self, ref_file, hf_file=None, save_path=None, **kwargs):
+        """
+        Generate a comparison plot of the scattering results.
+        
+        Parameters
+        ----------
+        file_name : str
+            The name of the file containing the CI coefficients and CSF strings.
+        **kwargs : dict
+            Additional arguments to pass to the plotting function.
+        """
+        # Load data
+        ref = np.loadtxt(ref_file)
+        if hf_file is not None: hf = np.loadtxt(hf_file)
+        
+        fit = self._result
+        
+        # Create main figure with two subplots
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10), gridspec_kw={'height_ratios': [2, 1]})
+        
+        # Upper plot: Scattering intensities
+        ax1.plot(ref[:,0], ref[:,1], 'k-', linewidth=2, label='AVQZ Reference')
+        if hf_file is not None: ax1.plot(hf[:,0], hf[:,1], 'b--', linewidth=1.5, label='HF')
+        ax1.plot(fit[:,0], fit[:,1], 'r-', linewidth=1.5, label='CSF Optimized Fit')
+        
+        ax1.set_xlabel('$q$ / a.u.')
+        ax1.set_ylabel('Scattering Intensity')
+        ax1.set_xlim(0, 8)
+        ax1.legend(loc='best')
+        ax1.grid(True, alpha=0.3)
+        
+        # Lower plot: Percentage differences
+        ax2.axhline(0, color='k', linestyle='-', alpha=0.5)
+        if hf_file is not None: ax2.scatter(hf[:,0], -(ref[:,1] - hf[:,1])/ref[:,1]*100, 
+                s=20, marker='x', color='blue', label='HF % Diff')
+        ax2.scatter(fit[:,0], -(ref[:,1] - fit[:,1])/ref[:,1]*100, 
+                s=20, marker='o', color='red', label='CSF Optimized % Diff')
+        
+        ax2.set_xlabel('$q$ / a.u.')
+        ax2.set_ylabel('% Difference')
+        ax2.set_xlim(0, 8)
+        ax2.set_ylim(-50, 50)
+        ax2.legend(loc='best')
+        ax2.grid(True, alpha=0.3)
+        
+        # Set title        
+        plt.tight_layout()
+        
+        # Save if requested
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            print(f"Saved comparison plot to {save_path}")
+        
+        return fig
