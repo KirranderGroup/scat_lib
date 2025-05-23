@@ -248,7 +248,7 @@ def _read_contractions(file):
                     temp_gto = PrimitiveGTO(atm, contraction_counter + i,
                                             group_counter, g, c, l, m, n)
                     GTOs.append(temp_gto)
-                    temp_gto.print_gto()
+                    #temp_gto.print_gto()
 
             contraction_counter += len(ang)
     else:

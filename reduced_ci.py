@@ -1,10 +1,10 @@
 from pyscf import gto, scf, mcscf, fci
 from mrh.my_pyscf.fci.csfstring import CSFTransformer
 import numpy as np
-from ci_to_2rdm import write_ci_file, read_ci_file, update_ci_coeffs, calc_energy
 import sys
 sys.path.append('./')
 from scat_lib.scat_calc import run_scattering, run_scattering_csf, run_scattering_pyscf
+from scat_lib.ci_to_2rdm import write_ci_file, read_ci_file, update_ci_coeffs, calc_energy
 from fit_utils import generate_comparison_plot
 import matplotlib.pyplot as plt
 import colorcet as cc
@@ -175,7 +175,6 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
         unscaled = np.array([val *1/ self._reduced_csf_reduction_factors[i] for i, val in enumerate(self._reduced_csf)])
 
         expanded_csf = unscaled[self._reduced_csf_inverse]
-        print(np.sum(expanded_csf**2))
         assert np.isclose(np.sum(expanded_csf**2), 1), 'Expanded CSF coefficients are not normalized!'
         self.csf = expanded_csf
 

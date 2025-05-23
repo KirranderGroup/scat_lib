@@ -100,7 +100,7 @@ def prepare_files(
         f.write(one_rdm_file + '\n')
         f.write(two_rdm_file)
 
-    print(geom)
+    #print(geom)
     xx = gtos.x
     yy = gtos.y
     zz = gtos.z
@@ -223,7 +223,8 @@ def run_scattering_pyscf(
         cutoffmd = 1e-20,
         state1 = 1,
         state2 = 1,
-        state3 = 1
+        state3 = 1,
+        **kwargs
         ):
     
     """
@@ -339,7 +340,8 @@ def run_scattering_csf(
         cutoffmd = 1e-20,
         state1 = 1,
         state2 = 1,
-        state3 = 1
+        state3 = 1,
+        **kwargs
         ):
     """
     Run scattering on a given CSF configuration.
