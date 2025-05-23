@@ -1,10 +1,10 @@
 from pyscf import gto, scf, mcscf, fci
 from mrh.my_pyscf.fci.csfstring import CSFTransformer
 import numpy as np
-from scat_lib.ci_to_2rdm import write_ci_file, read_ci_file, update_ci_coeffs, calc_energy
+from ci_to_2rdm import write_ci_file, read_ci_file, update_ci_coeffs, calc_energy
 import sys
 sys.path.append('./')
-from .scat_calc import run_scattering, run_scattering_csf, run_scattering_pyscf
+from scat_lib.scat_calc import run_scattering, run_scattering_csf, run_scattering_pyscf
 from fit_utils import generate_comparison_plot
 import matplotlib.pyplot as plt
 import colorcet as cc
