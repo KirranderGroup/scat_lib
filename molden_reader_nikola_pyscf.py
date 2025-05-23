@@ -7,7 +7,7 @@ functionality in objects.
 """
 
 import numpy as np
-import molecule as mol
+import scat_lib.molecule as mol
 import re
 import math
 import copy

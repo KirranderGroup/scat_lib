@@ -2,7 +2,8 @@ import os
 import sys
 import subprocess
 from pyscf import gto, mcscf, scf, fci, ci, tools
-import molden_reader_nikola_pyscf as pymldreader
+sys.path.append('./')
+import scat_lib.molden_reader_nikola_pyscf as pymldreader
 import numpy as np
 from copy import deepcopy 
 
@@ -14,7 +15,7 @@ from ci_to_2rdm import update_ci_coeffs, read_ci_file
 
 
 from mrh.my_pyscf.fci.csfstring import CSFTransformer
-from makerdm import get_dms, _make_rdm12_on_mo
+from scat_lib.makerdm import get_dms, _make_rdm12_on_mo
 
 
 types = {'total': '1', 
