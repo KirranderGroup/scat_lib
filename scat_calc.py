@@ -42,7 +42,8 @@ def prepare_files(
         cutoffmd = 1e-20,
         state1 = 1,
         state2 = 1,
-        state3 = 1):
+        state3 = 1,
+        path= None):
     """
     Prepares the files needed to run scattering.
 
@@ -74,7 +75,26 @@ def prepare_files(
 
     gtos, atoms = pymldreader.read_orbitals(molden_file, N=100, decontract=True)
     geom = atoms.geometry()
-        
+    
+    if path is not None:
+        os.chdir(path)
+    if not os.path.exists('options.dat'):
+        subprocess.run(['rm', 'options.dat'])
+    if not os.path.exists('basis.dat'):
+        subprocess.run(['rm', 'basis.dat'])
+    if not os.path.exists('MOs.dat'):
+        subprocess.run(['rm', 'MOs.dat'])
+    if not os.path.exists('1rdm_' + file_name + '.txt'):
+        subprocess.run(['rm', '1rdm_' + file_name + '.txt'])
+    if not os.path.exists('2rdm_' + file_name + '.txt'):
+        subprocess.run(['rm', '2rdm_' + file_name + '.txt'])
+    if not os.path.exists('2rdm.txt'):
+        subprocess.run(['rm', '2rdm.txt'])
+    if not os.path.exists(file_name + '.molden'):
+        subprocess.run(['rm', file_name + '.molden'])
+    if not os.path.exists(file_name):
+        subprocess.run(['rm', file_name])
+    
     with open('options.dat', 'w') as f:
         f.write(str(np.size(atoms.atomic_numbers())) + '\n')
         for i in atoms.atomic_numbers():
@@ -318,7 +338,8 @@ def run_scattering_pyscf(
                             cutoffmd = cutoffmd,
                             state1 = state1,
                             state2 = state2,
-                            state3 = state3)
+                            state3 = state3,
+                            **kwargs)
     return result
 
 def run_scattering_csf(
@@ -425,7 +446,8 @@ def run_scattering_csf(
         cutoffmd = cutoffmd,
         state1 = state1,
         state2 = state2,
-        state3 = state3
+        state3 = state3,
+        **kwargs
     )
     return result
     
