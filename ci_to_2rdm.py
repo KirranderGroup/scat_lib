@@ -295,7 +295,7 @@ def calc_energy(casscf, mol, ci_modified):
     assert np.isclose(np.linalg.norm(ci_modified), 1), 'Wavefunction is not normalised!'
     h1_eff, e_core = casscf.get_h1eff()       # one-electron part (active space) and core energy
     eri_cas = casscf.get_h2eff()             # two-electron integrals in active space (MO basis)
-# Compute energy of the modified CI vector with these integrals
+    # Compute energy of the modified CI vector with these integrals
     E_cas = fci.direct_spin1.energy(h1_eff, eri_cas, ci_modified, casscf.ncas, casscf.nelecas)  # electronic CAS energy
     E_total = E_cas + e_core + mol.energy_nuc()  # add core and nuclear repulsion energy
     return E_total

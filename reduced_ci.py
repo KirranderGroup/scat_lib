@@ -5,7 +5,7 @@ import sys
 sys.path.append('./')
 from scat_lib.scat_calc import run_scattering, run_scattering_csf, run_scattering_pyscf
 from scat_lib.ci_to_2rdm import write_ci_file, read_ci_file, update_ci_coeffs, calc_energy
-from fit_utils import generate_comparison_plot
+from scat_lib.fit_utils import generate_comparison_plot
 import matplotlib.pyplot as plt
 import colorcet as cc
 import seaborn as sns
@@ -50,8 +50,9 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
         The FCI solver object.
     """
 
-    def __init__(self, mf_or_mol, ncas=0, nalpha = 0 , nbeta = 0, ncore=None, frozen=None):
+    def __init__(self, mf_or_mol, ncas=0, nalpha = 0 , nbeta = 0, ncore=None, frozen=None, verbose=0, **kwargs):
         super().__init__(mf_or_mol, ncas = ncas, nelecas = (nalpha + nbeta), ncore = ncore, frozen = frozen)
+        self.verbose = verbose
         self._mf = mf_or_mol
         self.nelec = (nalpha, nbeta)
         self.nalpha = nalpha
@@ -60,6 +61,9 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
         self.occslst = fci.cistring.gen_occslst(range(self.ncas), (self.nelec[0] + self.nelec[1]) // 2)
         _ = self.kernel()
         self._csf = self.transformer.vec_det2csf(self.ci)
+    
+        self._oneelectron, self._coreenergy = self.get_h1eff()
+        self._twoelectron = self.get_h2eff()
 
         self.alpha_dets = [a for a in self.occslst.tolist() for _ in range(len(self.occslst))]
         self.beta_dets = [b for _ in range(len(self.occslst)) for b in self.occslst.tolist()]
@@ -148,7 +152,8 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
             if len(value.flatten()) == self.transformer.ncsf:
                 self._csf = value
                 full_det = self.transformer.vec_csf2det(value)
-                self.update_ci(full_det.flatten())           
+                full_det = full_det.flatten()
+                self.update_ci(full_det)           
         else:
             raise ValueError("CSF coefficients are not normalized. Please normalize them before setting.")
     
@@ -166,7 +171,6 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
 
         if not isinstance(value, np.ndarray):
             raise TypeError("reduced_csf must be a numpy array.")
-        
         if np.isclose(np.sum(value**2),1):
             self._reduced_csf = value
         else:
@@ -177,17 +181,28 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
         expanded_csf = unscaled[self._reduced_csf_inverse]
         assert np.isclose(np.sum(expanded_csf**2), 1), 'Expanded CSF coefficients are not normalized!'
         self.csf = expanded_csf
-
-
+        return
+    
+    # def calc_etot(self):
+    #     print('Calculating total energy...')
+    #     energy = calc_energy(self, self._mf, self.ci)
+    #     return energy
+    
     def calc_etot(self):
-        self.e_tot = calc_energy(self, self._mf, self.ci)
+    # no casscf or mol here!
+        #assert np.isclose(np.linalg.norm(self.ci), 1)
+        E_cas = fci.direct_spin1.energy(
+            self._oneelectron, self._twoelectron, self.ci, self.ncas, self.nelecas)
+        self.e_tot = E_cas + self._coreenergy
         return self.e_tot
+
 
     def update_ci(self, value):
         norm = (value**2).sum()
-        assert np.isclose(norm, 1), f'Supplied CI Vector is not normalised! (Norm = {norm:.10f})'
         _ = update_ci_coeffs(self.alpha_dets, self.beta_dets, value, self, update = True)
         _ = self.calc_etot()
+
+        return
     
 
     def run_scattering(self, file_name, **kwargs):

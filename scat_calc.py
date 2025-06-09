@@ -7,6 +7,7 @@ import scat_lib.molden_reader_nikola_pyscf as pymldreader
 import numpy as np
 from copy import deepcopy 
 
+
 scat_dir = '/u/ajmk/sann8252/PyXSCAT_Patrick/src'
 if scat_dir not in sys.path:
     sys.path.append(scat_dir)
@@ -76,24 +77,24 @@ def prepare_files(
     gtos, atoms = pymldreader.read_orbitals(molden_file, N=100, decontract=True)
     geom = atoms.geometry()
     
-    if path is not None:
-        os.chdir(path)
-    if not os.path.exists('options.dat'):
-        subprocess.run(['rm', 'options.dat'])
-    if not os.path.exists('basis.dat'):
-        subprocess.run(['rm', 'basis.dat'])
-    if not os.path.exists('MOs.dat'):
-        subprocess.run(['rm', 'MOs.dat'])
-    if not os.path.exists('1rdm_' + file_name + '.txt'):
-        subprocess.run(['rm', '1rdm_' + file_name + '.txt'])
-    if not os.path.exists('2rdm_' + file_name + '.txt'):
-        subprocess.run(['rm', '2rdm_' + file_name + '.txt'])
-    if not os.path.exists('2rdm.txt'):
-        subprocess.run(['rm', '2rdm.txt'])
-    if not os.path.exists(file_name + '.molden'):
-        subprocess.run(['rm', file_name + '.molden'])
-    if not os.path.exists(file_name):
-        subprocess.run(['rm', file_name])
+    # if path is not None:
+    #     os.chdir(path)
+    # if not os.path.exists('options.dat'):
+    #     subprocess.run(['rm', 'options.dat'])
+    # if not os.path.exists('basis.dat'):
+    #     subprocess.run(['rm', 'basis.dat'])
+    # if not os.path.exists('MOs.dat'):
+    #     subprocess.run(['rm', 'MOs.dat'])
+    # if not os.path.exists('1rdm_' + file_name + '.txt'):
+    #     subprocess.run(['rm', '1rdm_' + file_name + '.txt'])
+    # if not os.path.exists('2rdm_' + file_name + '.txt'):
+    #     subprocess.run(['rm', '2rdm_' + file_name + '.txt'])
+    # if not os.path.exists('2rdm.txt'):
+    #     subprocess.run(['rm', '2rdm.txt'])
+    # if not os.path.exists(file_name + '.molden'):
+    #     subprocess.run(['rm', file_name + '.molden'])
+    # if not os.path.exists(file_name):
+    #     subprocess.run(['rm', file_name])
     
     with open('options.dat', 'w') as f:
         f.write(str(np.size(atoms.atomic_numbers())) + '\n')
@@ -215,7 +216,14 @@ def run_scattering(
 
     # with open(log_file, 'w') as f:
         #subprocess.run(['Main.exe'], stdout=f)
-    os.system(f'LD_LIBRARY_PATH=/opt/intel/oneapi/vpl/2022.0.0/lib:/opt/intel/oneapi/tbb/2021.5.1/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.5.1//libfabric/lib:/opt/intel/oneapi/mpi/2021.5.1//lib/release:/opt/intel/oneapi/mpi/2021.5.1//lib:/opt/intel/oneapi/mkl/2022.0.2/lib/intel64:/opt/intel/oneapi/itac/2021.5.0/slib:/opt/intel/oneapi/ipp/2021.5.2/lib/intel64:/opt/intel/oneapi/ippcp/2021.5.1/lib/intel64:/opt/intel/oneapi/ipp/2021.5.2/lib/intel64:/opt/intel/oneapi/dnnl/2022.0.2/cpu_dpcpp_gpu_dpcpp/lib:/opt/intel/oneapi/debugger/2021.5.0/gdb/intel64/lib:/opt/intel/oneapi/debugger/2021.5.0/libipt/intel64/lib:/opt/intel/oneapi/debugger/2021.5.0/dep/lib:/opt/intel/oneapi/dal/2021.5.3/lib/intel64:/opt/intel/oneapi/compiler/2022.0.2/linux/lib:/opt/intel/oneapi/compiler/2022.0.2/linux/lib/x64:/opt/intel/oneapi/compiler/2022.0.2/linux/lib/oclfpga/host/linux64/lib:/opt/intel/oneapi/compiler/2022.0.2/linux/compiler/lib/intel64_lin:/opt/intel/oneapi/ccl/2021.5.1/lib/cpu_gpu_dpcpp:/u/ajmk/sann8252/local/lib Main.exe > {log_file}')
+    #print(f'Running scattering with type {type} and file {file_name}')
+
+    try:
+        os.system(f'LD_LIBRARY_PATH=/opt/intel/oneapi/vpl/2022.0.0/lib:/opt/intel/oneapi/tbb/2021.5.1/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.5.1//libfabric/lib:/opt/intel/oneapi/mpi/2021.5.1//lib/release:/opt/intel/oneapi/mpi/2021.5.1//lib:/opt/intel/oneapi/mkl/2022.0.2/lib/intel64:/opt/intel/oneapi/itac/2021.5.0/slib:/opt/intel/oneapi/ipp/2021.5.2/lib/intel64:/opt/intel/oneapi/ippcp/2021.5.1/lib/intel64:/opt/intel/oneapi/ipp/2021.5.2/lib/intel64:/opt/intel/oneapi/dnnl/2022.0.2/cpu_dpcpp_gpu_dpcpp/lib:/opt/intel/oneapi/debugger/2021.5.0/gdb/intel64/lib:/opt/intel/oneapi/debugger/2021.5.0/libipt/intel64/lib:/opt/intel/oneapi/debugger/2021.5.0/dep/lib:/opt/intel/oneapi/dal/2021.5.3/lib/intel64:/opt/intel/oneapi/compiler/2022.0.2/linux/lib:/opt/intel/oneapi/compiler/2022.0.2/linux/lib/x64:/opt/intel/oneapi/compiler/2022.0.2/linux/lib/oclfpga/host/linux64/lib:/opt/intel/oneapi/compiler/2022.0.2/linux/compiler/lib/intel64_lin:/opt/intel/oneapi/ccl/2021.5.1/lib/cpu_gpu_dpcpp:/u/ajmk/sann8252/local/lib Main.exe > {log_file}')
+    except Exception as e:
+        print(f"Error running Main.exe: {e}")
+        return None
+    
     result = np.loadtxt(f'{file_name}')
     if clean_files:
         subprocess.run(['rm', 'options.dat'])
@@ -288,7 +296,6 @@ def run_scattering_pyscf(
     intensity : array_like
         An array of intensity values at the corresponding q
     """
-
 
     if orbital_type == 'HF':
         tools.molden.dump_scf(mf, f'{file_name}.molden')
