@@ -9,7 +9,7 @@ description = "A Python library for calculating X-ray scattering from ab initio 
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "scat_lib contributors"}
+    {name = "Patrick Wang"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
