@@ -1,8 +1,8 @@
 import numpy as np
-from ci_to_2rdm import *
+from .ci_to_2rdm import *
 from pyscf import mcscf, scf, fci, ci, ao2mo
 import matplotlib.pyplot as plt
-from rdm_tools import *
+from .rdm_tools import *
 import os 
 import sys
 from scipy.optimize import minimize
@@ -10,7 +10,7 @@ import colorcet as cc
 import seaborn as sns
 sns.set_palette(cc.glasbey_bw)
 os.environ['OMP_NUM_THREADS']='32'
-from sine_transform import *
+from .sine_transform import *
 from pickle import dump
 
 def fitting(x, casscf, ref, hf_dat, name='fit'):
