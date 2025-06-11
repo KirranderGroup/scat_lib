@@ -49,9 +49,13 @@ Homepage = "https://github.com/your-org/scat_lib"
 Documentation = "https://scat-lib.readthedocs.io"
 Repository = "https://github.com/your-org/scat_lib"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["scat_lib*"]
+[tool.setuptools]
+
+packages = ["scat_lib", 
+"scat_lib.reduced_ci", 
+"scat_lib.molecule", 
+"scat_lib.makerdm.py",
+"scat_lib.scat_calc.py"]
 
 [tool.black]
 line-length = 88
@@ -61,3 +65,4 @@ target-version = ['py38']
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "--cov=scat_lib"
+
