@@ -25,7 +25,6 @@ API Reference
    scat_lib.fit_utils
    scat_lib.makerdm
    scat_lib.molecule
-   scat_lib.molden_reader_nikola_pyscf
    scat_lib.rdm_tools
    scat_lib.reduced_ci
    scat_lib.scat_calc

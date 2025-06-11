@@ -22,13 +22,21 @@ class PrimitiveGTO:
     def __init__(self, atom_idx, contraction, group, ga, c, l, m, n):
         """Define Primitive.
 
-        atom_idx - int - the atom on which the GTO is centered
-        ga - float - the exponent
-        c - float - the contraction coefficient
-        contraction - int - which contraction does it belong to
-        l, m, n - int - the angular momentum q. numbers
-        group - int - e.g. px, py and pz component of a p GTO form a group
-                    (useful for MD coefficients etc)
+        Parameters
+        ----------
+        atom_idx : int
+            The atom on which the GTO is centered
+        ga : float
+            The exponent
+        c : float
+            The contraction coefficient
+        contraction : int
+            Which contraction does it belong to
+        l, m, n : int
+            The angular momentum quantum numbers
+        group : int
+            E.g. px, py and pz component of a p GTO form a group
+            (useful for MD coefficients etc)
         """
         self.atom_idx = atom_idx
         self.ga = ga

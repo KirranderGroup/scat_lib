@@ -55,18 +55,11 @@ autodoc_default_options = {
 
 # Mock imports for dependencies that might not be available during docs build
 autodoc_mock_imports = [
-    'pyscf',
-    'numpy',
-    'scipy',
-    'matplotlib',
-    'seaborn',
-    'colorcet',
+    'sine_transform',
     'mrh',
     'mrh.my_pyscf',
     'mrh.my_pyscf.fci',
     'mrh.my_pyscf.fci.csfstring',
-    'sine_transform',
-    'pickle'
 ]
 
 # Additional autodoc settings to handle problematic imports

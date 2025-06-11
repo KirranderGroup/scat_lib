@@ -41,14 +41,6 @@ scat\_lib.molecule module
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.molden\_reader\_nikola\_pyscf module
-----------------------------------------------
-
-.. automodule:: scat_lib.molden_reader_nikola_pyscf
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 scat\_lib.rdm\_tools module
 ---------------------------
 
@@ -64,7 +56,6 @@ scat\_lib.reduced\_ci module
    :members:
    :undoc-members:
    :show-inheritance:
-   :special-members: __init__
 
 scat\_lib.scat\_calc module
 ---------------------------

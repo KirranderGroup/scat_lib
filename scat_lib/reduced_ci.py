@@ -5,51 +5,67 @@ This module provides classes and functions for performing reduced CASSCF calcula
 with the ability to write CI coefficients and CSF strings to files.
 """
 
-from pyscf import gto, scf, mcscf, fci
+import warnings
+import numpy as np
+
+# Handle optional dependencies
+try:
+    from pyscf import gto, scf, mcscf, fci
+except ImportError:
+    warnings.warn("PySCF not available")
+    # Mock the classes for documentation builds
+    class mcscf:
+        class mc1step:
+            class CASSCF:
+                pass
+
 try:
     from mrh.my_pyscf.fci.csfstring import CSFTransformer
 except ImportError:
-    # Handle case where mrh is not available
+    warnings.warn("MRH library not available")
     CSFTransformer = None
-import numpy as np
-import sys
-import os
 
-# Add current directory to path for local imports
-current_dir = os.path.dirname(os.path.abspath(__file__))
-if current_dir not in sys.path:
-    sys.path.append(current_dir)
-
+# Import local modules with error handling
 try:
-    from .scat_calc import run_scattering, run_scattering_csf, run_scattering_pyscf
-    from .ci_to_2rdm import write_ci_file, read_ci_file, update_ci_coeffs, calc_energy
-    from .fit_utils import generate_comparison_plot
+    from . import scat_calc
+    from . import ci_to_2rdm
+    from . import fit_utils
 except ImportError:
-    # Fallback for development/testing
-    try:
-        from scat_calc import run_scattering, run_scattering_csf, run_scattering_pyscf
-        from ci_to_2rdm import write_ci_file, read_ci_file, update_ci_coeffs, calc_energy
-        from fit_utils import generate_comparison_plot
-    except ImportError:
-        # Mock the imports for documentation builds
-        def run_scattering(*args, **kwargs): pass
-        def run_scattering_csf(*args, **kwargs): pass
-        def run_scattering_pyscf(*args, **kwargs): pass
-        def write_ci_file(*args, **kwargs): pass
-        def read_ci_file(*args, **kwargs): pass
-        def update_ci_coeffs(*args, **kwargs): pass
-        def calc_energy(*args, **kwargs): pass
-        def generate_comparison_plot(*args, **kwargs): pass
+    # For documentation builds, create dummy functions
+    class scat_calc:
+        @staticmethod
+        def run_scattering(*args, **kwargs):
+            pass
+        @staticmethod
+        def run_scattering_csf(*args, **kwargs):
+            pass
+        @staticmethod
+        def run_scattering_pyscf(*args, **kwargs):
+            pass
+    
+    class ci_to_2rdm:
+        @staticmethod
+        def write_ci_file(*args, **kwargs):
+            pass
+        @staticmethod
+        def read_ci_file(*args, **kwargs):
+            pass
+        @staticmethod
+        def update_ci_coeffs(*args, **kwargs):
+            pass
+        @staticmethod
+        def calc_energy(*args, **kwargs):
+            pass
+    
+    class fit_utils:
+        @staticmethod
+        def generate_comparison_plot(*args, **kwargs):
+            pass
 
 try:
     import matplotlib.pyplot as plt
-    import colorcet as cc
-    import seaborn as sns
-    sns.set_palette(cc.glasbey_bw)
 except ImportError:
-    # Handle missing optional dependencies
     plt = None
-
 
 
 
