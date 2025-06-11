@@ -5,7 +5,8 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../../'))
+# Add the parent directory (where scat_lib package is located) to Python path
+sys.path.insert(0, os.path.abspath('..'))
 
 print("PYTHONPATH for Sphinx build:", sys.path)
 # -- Project information -----------------------------------------------------
@@ -52,6 +53,19 @@ autodoc_default_options = {
     'exclude-members': '__weakref__'
 }
 
+# Mock imports for dependencies that might not be available during docs build
+autodoc_mock_imports = [
+    'pyscf',
+    'numpy',
+    'scipy',
+    'matplotlib',
+    'seaborn',
+    'colorcet',
+    'mrh',
+    'sine_transform',
+    'pickle'
+]
+
 # Autosummary settings
 autosummary_generate = True
 
@@ -69,4 +83,4 @@ intersphinx_mapping = {
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
+html_static_path = []  # Remove '_static' since it doesn't exist
