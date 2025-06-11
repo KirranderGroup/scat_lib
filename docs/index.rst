@@ -6,7 +6,9 @@
 scat_lib documentation
 ======================
 
-A Python library for quantum chemistry calculations and molecular analysis.
+A python library for calculating X-ray scattering signals using quantum chemistry calculations derived from PySCF.
+
+This library provides a wrapper for PyXSCAT library.
 
 .. toctree::
    :maxdepth: 2
