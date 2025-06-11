@@ -62,9 +62,27 @@ autodoc_mock_imports = [
     'seaborn',
     'colorcet',
     'mrh',
+    'mrh.my_pyscf',
+    'mrh.my_pyscf.fci',
+    'mrh.my_pyscf.fci.csfstring',
     'sine_transform',
     'pickle'
 ]
+
+# Additional autodoc settings to handle problematic imports
+autodoc_default_options.update({
+    'imported-members': True,
+    'show-inheritance': True,
+})
+
+# Don't skip __init__ methods
+def skip(app, what, name, obj, would_skip, options):
+    if name == "__init__":
+        return False
+    return would_skip
+
+def setup(app):
+    app.connect("autodoc-skip-member", skip)
 
 # Autosummary settings
 autosummary_generate = True

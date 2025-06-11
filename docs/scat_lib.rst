@@ -9,22 +9,6 @@ scat\_lib package
 Submodules
 ----------
 
-scat\_lib.CASSCF\_with\_CI module
----------------------------------
-
-.. automodule:: scat_lib.CASSCF_with_CI
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-scat\_lib.File\_creator\_pyscf module
--------------------------------------
-
-.. automodule:: scat_lib.File_creator_pyscf
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 scat\_lib.ci\_to\_2rdm module
 -----------------------------
 
@@ -80,6 +64,7 @@ scat\_lib.reduced\_ci module
    :members:
    :undoc-members:
    :show-inheritance:
+   :special-members: __init__
 
 scat\_lib.scat\_calc module
 ---------------------------
