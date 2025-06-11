@@ -21,8 +21,6 @@ API Reference
    :toctree: _autosummary
    :caption: API Reference
 
-   scat_lib.CASSCF_with_CI
-   scat_lib.File_creator_pyscf
    scat_lib.ci_to_2rdm
    scat_lib.fit_utils
    scat_lib.makerdm
@@ -38,4 +36,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
