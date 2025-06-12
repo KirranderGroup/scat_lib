@@ -20,9 +20,9 @@ except ImportError:
                 pass
 
 try:
-    from mrh.my_pyscf.fci.csfstring import CSFTransformer
+    from pyscf.csf_fci import CSFTransformer
 except ImportError:
-    warnings.warn("MRH library not available")
+    warnings.warn("PySCF-forge library not available")
     CSFTransformer = None
 
 # Import local modules with error handling
@@ -273,7 +273,7 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
         **kwargs : dict
             Additional arguments to pass to the scattering function.
         """
-        self._result = run_scattering_pyscf(self, self._mf, file_name, **kwargs)
+        self._result = scat_calc.run_scattering_pyscf(self, self._mf, file_name, **kwargs)
         return self._result
 
     def run_scattering_csf(self, file_name, **kwargs):
@@ -287,7 +287,7 @@ class ReducedCASSCF(mcscf.mc1step.CASSCF):
         **kwargs : dict
             Additional arguments to pass to the scattering function.
         """
-        self._result = run_scattering_csf(self.csf, self.nalpha, self.nbeta, self.ncas, 1, self, self._mf, file_name, **kwargs)
+        self._result = scat_calc.run_scattering_csf(self.csf, self.nalpha, self.nbeta, self.ncas, 1, self, self._mf, file_name, **kwargs)
 
         
         return self._result

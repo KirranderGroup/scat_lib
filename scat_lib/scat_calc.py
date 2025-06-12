@@ -3,20 +3,16 @@ import sys
 import subprocess
 from pyscf import gto, mcscf, scf, fci, ci, tools
 sys.path.append('./')
-import scat_lib.molden_reader_nikola_pyscf as pymldreader
+from . import molden_reader_nikola_pyscf as pymldreader
 import numpy as np
 from copy import deepcopy 
-
-
 scat_dir = '/u/ajmk/sann8252/PyXSCAT_Patrick/src'
 if scat_dir not in sys.path:
     sys.path.append(scat_dir)
 
-from ci_to_2rdm import update_ci_coeffs, read_ci_file
-
-
-from mrh.my_pyscf.fci.csfstring import CSFTransformer
-from scat_lib.makerdm import get_dms, _make_rdm12_on_mo
+from . import ci_to_2rdm
+from pyscf.csf_fci import CSFTransformer
+from . import makerdm 
 
 
 types = {'total': '1', 
@@ -309,7 +305,7 @@ def run_scattering_pyscf(
     nmo = casscf.mo_coeff.shape[1]
 
     casdm1, casdm2 = casscf.fcisolver.make_rdm12(_ci, ncas, nelecas)
-    dm1, dm2 = _make_rdm12_on_mo(casdm1, casdm2, ncore, ncas, nmo)
+    dm1, dm2 = makerdm._make_rdm12_on_mo(casdm1, casdm2, ncore, ncas, nmo)
 
     no_mos = dm1.shape[0]
 
@@ -437,7 +433,7 @@ def run_scattering_csf(
     casscf_copy = deepcopy(casscf)
     alpha = np.array(alpha)
     beta = np.array(beta)
-    update_ci_coeffs(alpha, beta, dets.flatten(), casscf_copy, update = True)
+    ci_to_2rdm.update_ci_coeffs(alpha, beta, dets.flatten(), casscf_copy, update = True)
 
     result = run_scattering_pyscf(
         casscf_copy,
