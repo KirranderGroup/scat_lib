@@ -7,8 +7,8 @@ import os
 import sys
 from scipy.optimize import minimize
 import colorcet as cc
-import seaborn as sns
-sns.set_palette(cc.glasbey_bw)
+import matplotlib as mpl
+plt.rcParams['axes.prop_cycle'] = mpl.cycler(color=cc.glasbey_bw)
 os.environ['OMP_NUM_THREADS']='32'
 from .sine_transform import *
 from pickle import dump

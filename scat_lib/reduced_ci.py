@@ -35,6 +35,7 @@ except ImportError:
     class scat_calc:
         @staticmethod
         def run_scattering(*args, **kwargs):
+            print('nothing')
             pass
         @staticmethod
         def run_scattering_csf(*args, **kwargs):
