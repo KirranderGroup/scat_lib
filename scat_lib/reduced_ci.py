@@ -20,9 +20,9 @@ except ImportError:
                 pass
 
 try:
-    from mrh.my_pyscf.fci.csfstring import CSFTransformer
+    from pyscf.csf_fci import CSFTransformer
 except ImportError:
-    warnings.warn("MRH library not available")
+    warnings.warn("PySCF-forge library not available")
     CSFTransformer = None
 
 # Import local modules with error handling
@@ -35,6 +35,7 @@ except ImportError:
     class scat_calc:
         @staticmethod
         def run_scattering(*args, **kwargs):
+            print('nothing')
             pass
         @staticmethod
         def run_scattering_csf(*args, **kwargs):

@@ -2,19 +2,16 @@ import os
 import sys
 import subprocess
 from pyscf import gto, mcscf, scf, fci, ci, tools
+sys.path.append('./')
 from . import molden_reader_nikola_pyscf as pymldreader
 import numpy as np
 from copy import deepcopy 
-
-
 scat_dir = '/u/ajmk/sann8252/PyXSCAT_Patrick/src'
 if scat_dir not in sys.path:
     sys.path.append(scat_dir)
 
-from ci_to_2rdm import update_ci_coeffs, read_ci_file
-
-
-from mrh.my_pyscf.fci.csfstring import CSFTransformer
+from . import ci_to_2rdm
+from pyscf.csf_fci import CSFTransformer
 from . import makerdm 
 
 
@@ -436,7 +433,7 @@ def run_scattering_csf(
     casscf_copy = deepcopy(casscf)
     alpha = np.array(alpha)
     beta = np.array(beta)
-    update_ci_coeffs(alpha, beta, dets.flatten(), casscf_copy, update = True)
+    ci_to_2rdm.update_ci_coeffs(alpha, beta, dets.flatten(), casscf_copy, update = True)
 
     result = run_scattering_pyscf(
         casscf_copy,

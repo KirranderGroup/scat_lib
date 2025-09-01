@@ -30,6 +30,7 @@ dependencies = [
     "matplotlib>=3.5.0",
     "seaborn>=0.11.0",
     "colorcet>=2.0.0",
+    "pyscf-forge@git+https://github.com/pyscf/pyscf-forge"
 ]
 
 [project.optional-dependencies]
