@@ -51,10 +51,16 @@ Documentation = "https://scat-lib.readthedocs.io"
 Repository = "https://github.com/your-org/scat_lib"
 
 [tool.setuptools]
-packages = ["scat_lib"]
+packages = [
+    "scat_lib",
+    "scat_lib.iam",
+    "scat_lib.iam.providers",
+]
 
 [tool.setuptools.package-data]
 scat_lib = ["*.py"]
+scat_lib.iam = ["data/*.txt", "*.py"]
+scat_lib.iam.providers = ["*.py"]
 
 [tool.black]
 line-length = 88

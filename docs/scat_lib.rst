@@ -64,3 +64,59 @@ scat\_lib.scat\_calc module
    :members:
    :undoc-members:
    :show-inheritance:
+
+scat\_lib.iam package
+---------------------
+
+.. automodule:: scat_lib.iam
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+scat\_lib.iam.constants module
+------------------------------
+
+.. automodule:: scat_lib.iam.constants
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+scat\_lib.iam.kinematics module
+-------------------------------
+
+.. automodule:: scat_lib.iam.kinematics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+scat\_lib.iam.form\_factors module
+----------------------------------
+
+.. automodule:: scat_lib.iam.form_factors
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+scat\_lib.iam.electron module
+-----------------------------
+
+.. automodule:: scat_lib.iam.electron
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+scat\_lib.iam.structure module
+-----------------------------
+
+.. automodule:: scat_lib.iam.structure
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+scat\_lib.iam.providers.xraydb\_provider module
+-----------------------------------------------
+
+.. automodule:: scat_lib.iam.providers.xraydb_provider
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -59,6 +59,12 @@ except ImportError as e:
     import warnings
     warnings.warn(f"Could not import scat_calc: {e}")
 
+try:
+    from . import iam
+except ImportError as e:
+    import warnings
+    warnings.warn(f"Could not import iam: {e}")
+
 __all__ = [
     'ci_to_2rdm',
     'fit_utils', 
@@ -67,5 +73,6 @@ __all__ = [
     'molden_reader_nikola_pyscf',
     'rdm_tools',
     'reduced_ci',
-    'scat_calc'
+    'scat_calc',
+    'iam',
 ]

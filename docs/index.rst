@@ -14,6 +14,7 @@ This library provides a wrapper for PyXSCAT library.
    :maxdepth: 2
    :caption: Contents:
 
+   iam_guide
    modules
 
 API Reference
@@ -30,6 +31,7 @@ API Reference
    scat_lib.rdm_tools
    scat_lib.reduced_ci
    scat_lib.scat_calc
+   scat_lib.iam
 
 Indices and tables
 ==================
