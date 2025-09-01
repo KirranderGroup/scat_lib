@@ -58,9 +58,9 @@ packages = [
 ]
 
 [tool.setuptools.package-data]
-scat_lib = ["*.py"]
-scat_lib.iam = ["data/*.txt", "*.py"]
-scat_lib.iam.providers = ["*.py"]
+"scat_lib" = ["*.py"]
+"scat_lib.iam" = ["data/*.txt", "*.py"]
+"scat_lib.iam.providers" = ["*.py"]
 
 [tool.black]
 line-length = 88
