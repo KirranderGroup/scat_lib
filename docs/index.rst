@@ -15,6 +15,7 @@ This library provides a wrapper for PyXSCAT library.
    :caption: Contents:
 
    iam_guide
+   gas_iam_guide
    modules
 
 API Reference
@@ -32,6 +33,7 @@ API Reference
    scat_lib.reduced_ci
    scat_lib.scat_calc
    scat_lib.iam
+   scat_lib.gas_iam
 
 Indices and tables
 ==================

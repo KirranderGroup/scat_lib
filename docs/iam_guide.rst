@@ -73,4 +73,4 @@ See Also
 - API reference: :mod:`scat_lib.iam`
 - Modules: :mod:`scat_lib.iam.constants`, :mod:`scat_lib.iam.kinematics`,
   :mod:`scat_lib.iam.form_factors`, :mod:`scat_lib.iam.electron`, :mod:`scat_lib.iam.structure`
-
+ - For a minimal gas-phase implementation mirroring an F90 workflow, see :mod:`scat_lib.gas_iam` and the Gas IAM Guide.

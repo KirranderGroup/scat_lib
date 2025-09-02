@@ -120,3 +120,51 @@ scat\_lib.iam.providers.xraydb\_provider module
    :members:
    :undoc-members:
    :show-inheritance:
+
+scat\_lib.gas\_iam package
+--------------------------
+
+.. automodule:: scat_lib.gas_iam
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+scat\_lib.gas\_iam.constants module
+-----------------------------------
+
+.. automodule:: scat_lib.gas_iam.constants
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+scat\_lib.gas\_iam.cm module
+----------------------------
+
+.. automodule:: scat_lib.gas_iam.cm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+scat\_lib.gas\_iam.geometry module
+----------------------------------
+
+.. automodule:: scat_lib.gas_iam.geometry
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+scat\_lib.gas\_iam.qgrid module
+-------------------------------
+
+.. automodule:: scat_lib.gas_iam.qgrid
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+scat\_lib.gas\_iam.scattering module
+------------------------------------
+
+.. automodule:: scat_lib.gas_iam.scattering
+   :members:
+   :undoc-members:
+   :show-inheritance:

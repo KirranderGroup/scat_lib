@@ -65,6 +65,12 @@ except ImportError as e:
     import warnings
     warnings.warn(f"Could not import iam: {e}")
 
+try:
+    from . import gas_iam
+except ImportError as e:
+    import warnings
+    warnings.warn(f"Could not import gas_iam: {e}")
+
 __all__ = [
     'ci_to_2rdm',
     'fit_utils', 
@@ -75,4 +81,5 @@ __all__ = [
     'reduced_ci',
     'scat_calc',
     'iam',
+    'gas_iam',
 ]
