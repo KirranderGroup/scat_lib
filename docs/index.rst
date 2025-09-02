@@ -6,9 +6,12 @@
 scat_lib documentation
 ======================
 
-A python library for calculating X-ray scattering signals using quantum chemistry calculations derived from PySCF.
+This is a python library with a collection of tools for X-ray scattering calculations developed at the Kirrander Group, University of Oxford. (https://kirrander.web.ox.ac.uk)
 
-This library provides a wrapper for PyXSCAT library.
+The library provides a wrapper for PyXSCAT library. It can compute X-ray scattering amplitudes (total and elastic) from ab initio calculations done by PySCF.
+
+The library also provides a suite of tools in calculating scattering, in the gas phase, using the independent atom model.
+
 
 .. toctree::
    :maxdepth: 2
