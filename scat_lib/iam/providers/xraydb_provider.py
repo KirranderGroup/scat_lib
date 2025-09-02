@@ -10,6 +10,7 @@ def xraydb_fx(element: str, s: float) -> Optional[float]:
     """Return f0(s) using xraydb if available, else None."""
     try:
         import xraydb
+        print('using xraydb')
     except Exception:
         return None
     # xraydb.f0 returns (f0, res) where res includes source; argument is sin(theta)/lambda

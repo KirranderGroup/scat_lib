@@ -100,4 +100,3 @@ def structure_factor_electron(structure: Structure, q_vecs: np.ndarray, beam_ene
             acc += site.occupancy * fe * T * _phase(q, site.position)
         F[i] = acc
     return F
-
