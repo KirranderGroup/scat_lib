@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gas-iam-f90"
+version = "0.2.0"
+description = "Gas-phase IAM scattering (X-ray) from F90 with optional xraydb backend"
+authors = [{name = "Your Name"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = ["xray", "gas phase", "IAM", "Cromer-Mann", "Waasmaier-Kirfel", "Debye", "scattering"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+
+[tool.setuptools.package-data]
+gas_iam_f90 = ["data/*.txt"]
