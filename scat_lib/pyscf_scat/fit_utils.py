@@ -1,16 +1,49 @@
-import numpy as np
-from .ci_to_2rdm import *
-from pyscf import mcscf, scf, fci, ci, ao2mo
-import matplotlib.pyplot as plt
-from .rdm_tools import *
-import os 
+import os
 import sys
-from scipy.optimize import minimize
-import colorcet as cc
-import matplotlib as mpl
-plt.rcParams['axes.prop_cycle'] = mpl.cycler(color=cc.glasbey_bw)
-os.environ['OMP_NUM_THREADS']='32'
-from ..sine_transform import *
+import numpy as np
+
+from .ci_to_2rdm import *
+from .rdm_tools import *
+
+# Optional heavy deps; guard for docs builds (RTD mocks modules)
+try:
+    from pyscf import mcscf, scf, fci, ci, ao2mo
+except Exception:  # pragma: no cover - allow docs build without PySCF
+    mcscf = scf = fci = ci = ao2mo = None
+
+try:
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+except Exception:  # pragma: no cover
+    mpl = None
+    plt = None
+
+try:
+    import colorcet as cc
+except Exception:  # pragma: no cover
+    cc = None
+
+try:
+    from scipy.optimize import minimize
+except Exception:  # pragma: no cover
+    minimize = None
+
+# Configure plotting style if real matplotlib is available
+try:
+    if mpl is not None and plt is not None and cc is not None:
+        if hasattr(plt, 'rcParams') and hasattr(mpl, 'cycler'):
+            plt.rcParams['axes.prop_cycle'] = mpl.cycler(color=getattr(cc, 'glasbey_bw', []))
+except Exception:
+    # Silently ignore styling errors in non-interactive/doc environments
+    pass
+
+os.environ.setdefault('OMP_NUM_THREADS', '32')
+
+try:
+    from ..sine_transform import *
+except Exception:  # pragma: no cover
+    pass
+
 from pickle import dump
 
 def fitting(x, casscf, ref, hf_dat, name='fit'):
