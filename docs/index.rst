@@ -28,13 +28,14 @@ API Reference
    :toctree: _autosummary
    :caption: API Reference
 
-   scat_lib.ci_to_2rdm
-   scat_lib.fit_utils
-   scat_lib.makerdm
+   scat_lib.pyscf_scat
+   scat_lib.pyscf_scat.ci_to_2rdm
+   scat_lib.pyscf_scat.fit_utils
+   scat_lib.pyscf_scat.makerdm
    scat_lib.molecule
-   scat_lib.rdm_tools
-   scat_lib.reduced_ci
-   scat_lib.scat_calc
+   scat_lib.pyscf_scat.rdm_tools
+   scat_lib.pyscf_scat.reduced_ci
+   scat_lib.pyscf_scat.scat_calc
    scat_lib.iam
    scat_lib.gas_iam
 

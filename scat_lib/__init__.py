@@ -12,6 +12,12 @@ __author__ = "Patrick Wang"
 
 # Import main modules (with error handling for missing dependencies)
 try:
+    from . import pyscf_scat
+except ImportError as e:
+    import warnings
+    warnings.warn(f"Could not import pyscf_scat subpackage: {e}")
+
+try:
     from . import ci_to_2rdm
 except ImportError as e:
     import warnings
@@ -72,6 +78,7 @@ except ImportError as e:
     warnings.warn(f"Could not import gas_iam: {e}")
 
 __all__ = [
+    'pyscf_scat',
     'ci_to_2rdm',
     'fit_utils', 
     'makerdm',

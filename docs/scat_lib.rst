@@ -9,160 +9,109 @@ scat\_lib package
 Submodules
 ----------
 
-scat\_lib.ci\_to\_2rdm module
------------------------------
+PySCF Scattering
+~~~~~~~~~~~~~~~~
 
-.. automodule:: scat_lib.ci_to_2rdm
+.. automodule:: scat_lib.pyscf_scat
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.fit\_utils module
----------------------------
-
-.. automodule:: scat_lib.fit_utils
+.. automodule:: scat_lib.pyscf_scat.ci_to_2rdm
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.makerdm module
-------------------------
-
-.. automodule:: scat_lib.makerdm
+.. automodule:: scat_lib.pyscf_scat.fit_utils
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.molecule module
--------------------------
-
-.. automodule:: scat_lib.molecule
+.. automodule:: scat_lib.pyscf_scat.makerdm
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.rdm\_tools module
----------------------------
-
-.. automodule:: scat_lib.rdm_tools
+.. automodule:: scat_lib.pyscf_scat.rdm_tools
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.reduced\_ci module
-----------------------------
-
-.. automodule:: scat_lib.reduced_ci
+.. automodule:: scat_lib.pyscf_scat.reduced_ci
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.scat\_calc module
----------------------------
-
-.. automodule:: scat_lib.scat_calc
+.. automodule:: scat_lib.pyscf_scat.scat_calc
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.iam package
----------------------
+IAM
+~~~
 
 .. automodule:: scat_lib.iam
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.iam.constants module
-------------------------------
-
 .. automodule:: scat_lib.iam.constants
    :members:
    :undoc-members:
    :show-inheritance:
-
-scat\_lib.iam.kinematics module
--------------------------------
 
 .. automodule:: scat_lib.iam.kinematics
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.iam.form\_factors module
-----------------------------------
-
 .. automodule:: scat_lib.iam.form_factors
    :members:
    :undoc-members:
    :show-inheritance:
-
-scat\_lib.iam.electron module
------------------------------
 
 .. automodule:: scat_lib.iam.electron
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.iam.structure module
------------------------------
-
 .. automodule:: scat_lib.iam.structure
    :members:
    :undoc-members:
    :show-inheritance:
-
-scat\_lib.iam.providers.xraydb\_provider module
------------------------------------------------
 
 .. automodule:: scat_lib.iam.providers.xraydb_provider
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.gas\_iam package
---------------------------
+Gas-phase IAM (F90)
+~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: scat_lib.gas_iam
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.gas\_iam.constants module
------------------------------------
-
 .. automodule:: scat_lib.gas_iam.constants
    :members:
    :undoc-members:
    :show-inheritance:
-
-scat\_lib.gas\_iam.cm module
-----------------------------
 
 .. automodule:: scat_lib.gas_iam.cm
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.gas\_iam.geometry module
-----------------------------------
-
 .. automodule:: scat_lib.gas_iam.geometry
    :members:
    :undoc-members:
    :show-inheritance:
 
-scat\_lib.gas\_iam.qgrid module
--------------------------------
-
 .. automodule:: scat_lib.gas_iam.qgrid
    :members:
    :undoc-members:
    :show-inheritance:
-
-scat\_lib.gas\_iam.scattering module
-------------------------------------
 
 .. automodule:: scat_lib.gas_iam.scattering
    :members:

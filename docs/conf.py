@@ -55,7 +55,17 @@ autodoc_default_options = {
 
 # Mock imports for dependencies that might not be available during docs build
 autodoc_mock_imports = [
+    # local optional utilities
     'sine_transform',
+    # third-party heavy deps to avoid during doc build
+    'pyscf',
+    'pyscf.csf_fci',
+    'matplotlib',
+    'matplotlib.pyplot',
+    'scipy',
+    'scipy.optimize',
+    'colorcet',
+    # legacy placeholders
     'mrh',
     'mrh.my_pyscf',
     'mrh.my_pyscf.fci',
