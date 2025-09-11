@@ -15,5 +15,3 @@ As of this restructure, all PySCF-dependent scattering utilities have been group
 - `scat_lib.pyscf_scat.fit_utils` (fitting/plot helpers)
 
 For backward compatibility, thin wrappers remain at the old top-level module paths (e.g., `scat_lib.scat_calc`) that re-export from the new subpackage. New code should import from `scat_lib.pyscf_scat.*`.
-
-## `ci_to_2rdm.py`

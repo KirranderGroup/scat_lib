@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(python -m pytest tests/test_reduced_ci.py -v)"
+    ],
+    "deny": []
+  }
+}
