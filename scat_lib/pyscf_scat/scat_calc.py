@@ -370,7 +370,7 @@ def run_scattering_csf(
         ):
     """
     Run scattering on a given CSF configuration.
-    
+
     Parameters
     ----------
     csf : list
@@ -383,7 +383,6 @@ def run_scattering_csf(
         The total number of orbitals in the system.
     spin_mult : int
         The spin multiplicity of the system.
-
     casscf : pyscf.mcscf.CASSCF
         The CASSCF object containing the CI coefficients and FCISolver.
     mf : pyscf.scf.hf.SCF
