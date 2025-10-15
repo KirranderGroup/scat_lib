@@ -2,7 +2,7 @@ from .constants import A0_ANG, PI
 from .cm import CromerMannTable, load_cm_table, fx_cromer_mann
 from .geometry import read_xyz, pair_distance_matrix, parse_xyz_string
 from .qgrid import q_grid_f90
-from .scattering import intensity_molecular_xray, intensity_components_xray
+from .scattering import intensity_molecular_xray, intensity_components_xray, intensity_pyscf
 from .pyscf_bridge import positions_and_labels_from_mole
 
 __all__ = [
