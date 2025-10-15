@@ -262,7 +262,7 @@ def intensity_molecular_xray(positions: np.ndarray, labels: List[str], q: np.nda
     """
     comps = intensity_components_xray(positions, labels, q, cm, backend=backend, ion_map=ion_map, inelastic=inelastic)
     if inelastic:
-        return comps[0], comps[-1]
+        return comps[0] + comps[-1]
     return comps[0]
 
 def intensity_pyscf(mol: "gto.Mole", q: np.ndarray, cm: Optional[CromerMannTable] = None,
