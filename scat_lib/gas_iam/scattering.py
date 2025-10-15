@@ -20,7 +20,7 @@ def _fx_from_backend(backend: str | FXFunc, cm: Optional[CromerMannTable] = None
         return backend
     be = (backend or 'affl').lower()
     if be == 'xraydb':
-        from .providers.xraydb_provider import fx_xraydb as _fx
+        from .xraydb_provider import fx_xraydb as _fx
         return lambda sym, s: _fx(sym, s, ion_map=ion_map)
     elif be in ('affl','cm','cromer-mann'):
         cm = cm or CromerMannTable()
