@@ -11,5 +11,5 @@ __all__ = [
     "read_xyz", "parse_xyz_string", "pair_distance_matrix",
     "q_grid_f90",
     "intensity_molecular_xray", "intensity_components_xray",
-    "positions_and_labels_from_mole",
+    "positions_and_labels_from_mole", "intensity_pyscf"
 ]
