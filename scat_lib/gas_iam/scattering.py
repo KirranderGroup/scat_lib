@@ -67,3 +67,10 @@ def intensity_molecular_xray(positions: np.ndarray, labels: List[str], q: np.nda
     """
     I_tot, _, _ = intensity_components_xray(positions, labels, q, cm, backend=backend, ion_map=ion_map)
     return I_tot
+
+def intensity_pyscf(mol: "gto.Mole", q: np.ndarray, cm: Optional[CromerMannTable] = None,
+                     *, backend: str | FXFunc = 'affl', ion_map: Optional[Mapping[str, str]] = None) -> np.ndarray:
+    """Return I(q) from a PySCF gto.Mole object."""
+    from .pyscf_bridge import positions_and_labels_from_mole
+    positions, labels = positions_and_labels_from_mole(mol)
+    return intensity_molecular_xray(positions, labels, q, cm, backend=backend, ion_map=ion_map)
