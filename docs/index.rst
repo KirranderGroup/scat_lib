@@ -12,6 +12,9 @@ The library provides a wrapper for PyXSCAT library. It can compute X-ray scatter
 
 The library also provides a suite of tools in calculating scattering, in the gas phase, using the independent atom model.
 
+Inquiries and issues can be directed to the GitHub issues page, or via email to Patrick Wang (patrick.wang@chem.ox.ac.uk)
+
+
 
 .. toctree::
    :maxdepth: 2
