@@ -13,7 +13,29 @@ class CMCoeffs:
     c: float
 
 class CromerMannTable:
-    """Table of Cromer–Mann coefficients loaded from affl.txt (4 Gaussians + constant)."""
+    """
+    Table of Cromer–Mann coefficients loaded from affl.txt (4 Gaussians + constant).
+    See: International Tables for Crystallography, Vol. C, 2006, Table 4.2.4.3
+
+    Attributes
+    ----------
+    path : str
+        Path to affl.txt file.
+    _d : Dict[str, CMCoeffs]
+        Dictionary mapping element symbols to their Cromer-Mann coefficients.
+    keys : List[str]
+        List of element symbols available in the table.
+    Methods
+    -------
+    __contains__(k: str) -> bool
+        Check if element symbol k is in the table.
+    get(k: str) -> CMCoeffs
+        Get the Cromer-Mann coefficients for element symbol k.
+    load_cm_table(path: str | None = None) -> CromerMannTable
+        Load a Cromer-Mann table from the specified path or default location.
+    fx_cromer_mann(symbol: str, s: float, table: CromerMannTable) -> float
+        Evaluate f_x(s) for the given element symbol and s value using the provided table.
+    """
     def __init__(self, path: str | None = None):
         self.path = path or os.path.join(DATA_DIR, "affl.txt")
         self._d: Dict[str, CMCoeffs] = {}

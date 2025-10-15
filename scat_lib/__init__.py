@@ -7,7 +7,7 @@ structure calculations using PySCF.
 It also allows the calculation of scattering using configuration state functions (CSF).
 """
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 __author__ = "Patrick Wang"
 
 # Import main modules (with error handling for missing dependencies)
@@ -75,7 +75,7 @@ try:
     from . import gas_iam
 except Exception as e:
     import warnings
-    warnings.warn(f"Could not import gas_iam: {e}")
+    warnings.warn(f"Could not import gas_iam in init: {e}")
 
 __all__ = [
     'pyscf_scat',
