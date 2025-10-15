@@ -8,6 +8,7 @@ from .constants import PI
 FXFunc = Callable[[str, float], float]
 
 def _sinc(x: np.ndarray) -> np.ndarray:
+    """Return sinc(x) = sin(x)/x, handling x=0 case."""
     out = np.empty_like(x, dtype=float)
     small = np.abs(x) < 1e-12
     out[small] = 1.0
@@ -16,6 +17,7 @@ def _sinc(x: np.ndarray) -> np.ndarray:
     return out
 
 def _fx_from_backend(backend: str | FXFunc, cm: Optional[CromerMannTable] = None, ion_map: Optional[Mapping[str, str]] = None) -> FXFunc:
+    """Return a function fx(symbol: str, s: float) -> float according to backend."""
     if callable(backend):
         return backend
     be = (backend or 'affl').lower()
@@ -28,12 +30,40 @@ def _fx_from_backend(backend: str | FXFunc, cm: Optional[CromerMannTable] = None
     else:
         raise ValueError(f"Unknown backend '{backend}'. Use 'affl' or 'xraydb' or pass a callable.")
 
+
 def intensity_components_xray(positions: np.ndarray, labels: List[str], q: np.ndarray, cm: Optional[CromerMannTable] = None,
                               *, backend: str | FXFunc = 'affl', ion_map: Optional[Mapping[str, str]] = None) -> Tuple[np.ndarray,np.ndarray,np.ndarray]:
-    """Return (I_total, I_self, I_cross).
-    I_total(q) = sum_{i,j} f_i(s) f_j(s) sinc(q r_ij), s = q/(4π).
-    backend: 'affl' (default) for internal Cromer–Mann table, or 'xraydb' to use xraydb.f0.
-    ion_map: optional mapping of labels (e.g., {'Cval':'C', 'Siv':'Si4+'}).
+    """
+    Return total, self, and cross I(q) from atomic positions and labels.
+    
+    Parameters
+    ----------
+    positions : np.ndarray
+        Array of shape (N, 3) with atomic positions in Angstrom.
+    labels : List[str]
+        List of length N with atomic symbols or labels.
+    q : np.ndarray
+        1D array of q values (in 1/Angstrom) at which to
+        compute the scattering intensity.
+    cm : Optional[CromerMannTable], optional
+        Optional Cromer-Mann table to use if backend is 'affl'.
+        If None, a default table will be used. Default is None.
+    backend : str | FXFunc, optional
+        Backend to use for atomic form factors.
+        'affl' (default) for internal Cromer–Mann table,
+        or 'xraydb' to use xraydb.f0,
+        or a callable function of signature fx(symbol: str, s: float) -> float.
+        Default is 'affl'.
+    ion_map : Optional[Mapping[str, str]], optional
+        Optional mapping of labels to standard symbols,
+        e.g., {'Cval':'C', 'Siv':'Si4+'}.
+        Only used if backend is 'xraydb'. Default is None.
+    
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray, np.ndarray]
+        Three 1D arrays of I(q) values corresponding to input q values:
+        total, self, and cross terms.
     """
     R = np.asarray(positions, float)
     q = np.asarray(q, float)
@@ -61,9 +91,37 @@ def intensity_components_xray(positions: np.ndarray, labels: List[str], q: np.nd
 
 def intensity_molecular_xray(positions: np.ndarray, labels: List[str], q: np.ndarray, cm: Optional[CromerMannTable] = None,
                              *, backend: str | FXFunc = 'affl', ion_map: Optional[Mapping[str, str]] = None) -> np.ndarray:
-    """Return I(q) exactly as printed by the F90 code for X-rays:
-    I(q) = sum_{i,j} f_i(s) f_j(s) sinc(q r_ij), with s = q/(4π).
-    Choose backend='xraydb' to use Waasmaier–Kirfel (via xraydb) instead of affl.txt.
+    """
+    Return I(q) from atomic positions and labels.
+
+    Parameters
+    ----------
+    positions : np.ndarray
+        Array of shape (N, 3) with atomic positions in Angstrom.
+    labels : List[str]
+        List of length N with atomic symbols or labels.
+    q : np.ndarray
+        1D array of q values (in 1/Angstrom) at which to
+        compute the scattering intensity.
+    cm : Optional[CromerMannTable], optional
+        Optional Cromer-Mann table to use if backend is 'affl'.
+        If None, a default table will be used. Default is None.
+    backend : str | FXFunc, optional
+        Backend to use for atomic form factors.
+        'affl' (default) for internal Cromer–Mann table,
+        or 'xraydb' to use xraydb.f0,
+        or a callable function of signature fx(symbol: str, s: float) -> float.
+        Default is 'affl'.
+    ion_map : Optional[Mapping[str, str]], optional
+        Optional mapping of labels to standard symbols,
+        e.g., {'Cval':'C', 'Siv':'Si4+'}.
+        Only used if backend is 'xray
+    db'. Default is None.
+
+    Returns
+    -------
+    np.ndarray
+        1D array of I(q) values corresponding to input q values.
     """
     I_tot, _, _ = intensity_components_xray(positions, labels, q, cm, backend=backend, ion_map=ion_map)
     return I_tot

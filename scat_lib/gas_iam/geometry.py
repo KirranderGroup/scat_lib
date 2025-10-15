@@ -3,9 +3,19 @@ from typing import Tuple, List, Sequence
 import numpy as np
 
 def read_xyz(path: str) -> Tuple[np.ndarray, List[str]]:
-    """Read a minimal XYZ file: first line N, second comment, then 'label x y z' per atom.
-    Returns positions [Å] as (N,3) float array and the list of labels (strings) as-is.
-    Labels are not canonicalized so they can match CM keys like 'Cval', 'Siv'.
+    """
+    Read positions/labels from an XYZ file.
+
+    Parameters
+    ----------
+    path : str
+        Path to the XYZ file.
+    Returns
+    -------
+    Tuple[np.ndarray, List[str]]
+        A tuple (positions, labels) where positions is an (N, 3) array of atomic
+        positions in Angstrom, and labels is a list of length N with atomic symbols
+        or labels.
     """
     with open(path, "r", encoding="utf-8") as f:
         lines = [ln.strip() for ln in f if ln.strip()]

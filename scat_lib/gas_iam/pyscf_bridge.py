@@ -8,7 +8,20 @@ if TYPE_CHECKING:  # pragma: no cover - imported for type checkers only
     from pyscf import gto
 
 def positions_and_labels_from_mole(mol: "gto.Mole") -> Tuple[np.ndarray, List[str]]:
-    """Return positions [Å] and element labels from a PySCF gto.Mole object."""
+    """
+    Return atomic positions (in Angstrom) and labels from a PySCF gto.Mole object.
+
+    Parameters
+    ----------
+    mol : gto.Mole
+        A PySCF gto.Mole instance.
+    Returns
+    -------
+    Tuple[np.ndarray, List[str]]
+        A tuple (positions, labels) where positions is an (N, 3) array of atomic
+        positions in Angstrom, and labels is a list of length N with atomic symbols
+        or labels.
+    """
     if mol is None:
         raise TypeError("Expected a pyscf.gto.Mole instance, got None")
     try:

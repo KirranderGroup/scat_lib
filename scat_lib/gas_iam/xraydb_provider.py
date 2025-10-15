@@ -21,8 +21,25 @@ def _normalize_label(label: str, ion_map: Optional[Mapping[str, str]] = None) ->
     return label
 
 def fx_xraydb(symbol: str, s: float, *, ion_map: Optional[Mapping[str, str]] = None) -> float:
-    """Return f0(s) using xraydb (Waasmaier–Kirfel). Expects s = sin(theta)/lambda [Å^-1].
-    Requires 'pip install xraydb'. Raises ImportError if missing.
+    """
+    Return atomic form factor f_xraydb(symbol, s) using xraydb.f0.
+    
+    Parameters
+    ----------
+    symbol : str
+        Atomic symbol or label, e.g., 'C', 'O1-', 'Fe2+', 'Cval', 'Siv'.
+    s : float
+        Scattering vector magnitude in 1/Angstrom.
+    ion_map : Optional[Mapping[str, str]], optional
+        Optional mapping of labels to standard symbols,
+        e.g., {'Cval':'C', 'Siv':'Si4+'}.
+        Default is None.
+    
+    Returns
+    -------
+    float
+        Atomic form factor f(s).
+
     """
     try:
         import xraydb
