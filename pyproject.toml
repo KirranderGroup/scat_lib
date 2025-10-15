@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scat_lib"
-version = "0.1.0"
+version = "1.0.0"
 description = "A Python library for calculating X-ray scattering from ab initio electronic structure calculations using PySCF"
 readme = "README.md"
 license = {text = "MIT"}
@@ -30,7 +30,8 @@ dependencies = [
     "matplotlib>=3.5.0",
     "seaborn>=0.11.0",
     "colorcet>=2.0.0",
-    "pyscf-forge@git+https://github.com/pyscf/pyscf-forge"
+    "pyscf-forge@git+https://github.com/pyscf/pyscf-forge",
+    "xraydb>=4.4"
 ]
 
 [project.optional-dependencies]
