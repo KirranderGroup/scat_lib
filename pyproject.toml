@@ -64,7 +64,7 @@ packages = [
 "scat_lib.iam" = ["data/*.txt", "*.py"]
 "scat_lib.iam.providers" = ["*.py"]
 "scat_lib.pyscf_scat" = ["*.py"]
-"scat_lib.gas_iam" = ["*.py"]
+"scat_lib.gas_iam" = ["*.py","data/*.txt", "*.txt"]
 
 [tool.black]
 line-length = 88
