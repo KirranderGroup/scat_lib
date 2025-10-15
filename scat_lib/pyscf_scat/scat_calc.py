@@ -370,6 +370,7 @@ def run_scattering_csf(
         ):
     """
     Run scattering on a given CSF configuration.
+    
     Parameters
     ----------
     csf : list
