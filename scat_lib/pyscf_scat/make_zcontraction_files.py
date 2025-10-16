@@ -4,8 +4,7 @@ import os
 from scat_calc import types
 
 def _make_zcontraction_option(
-        atoms,
-        geom,
+        mldfile,
         file_name,
         one_rdm_file,
         two_rdm_file,
@@ -21,7 +20,11 @@ def _make_zcontraction_option(
         state2 = 1,
         state3 = 1,
         path= None):
+    
+    
+    Nmo_max = 600
 
+    _, atoms, _, _, _, _ = mldreader.read_orbitals(mldfile, N=Nmo_max, decontract=False)
 
     jeremyR = False
     mcci = False
@@ -29,12 +32,7 @@ def _make_zcontraction_option(
     molpro = False
     molcas = False
     bagel = False
-    readtwordm = True
-    confs = 0
-    civs = 0
-    Nmo_max = 100
-    civs = np.array(civs)
-    
+    geom = atoms.geometry()
 
     with open(os.path.join(path, 'options.dat'), 'w') as f:
         f.write(str(np.size(atoms.atomic_numbers())) + '\n')
@@ -82,6 +80,9 @@ def _make_zcontraction_files(mldfile, path='./'):
     n = np.asarray(n)
     ga = np.asarray(ga)
     mmod = np.asarray(mmod, dtype=np.float64)
+
+
+
     with open(os.path.join(path, 'basis.dat'), 'w') as f:
         f.write(str(np.size(l)) + '\n')
         for i in range(np.size(l)):
