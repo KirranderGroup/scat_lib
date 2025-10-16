@@ -31,7 +31,8 @@ dependencies = [
     "seaborn>=0.11.0",
     "colorcet>=2.0.0",
     "pyscf-forge@git+https://github.com/pyscf/pyscf-forge",
-    "xraydb>=4.4"
+    "xraydb>=4.4",
+    "importlib_resources>=5; python_version < \"3.9\""
 ]
 
 [project.optional-dependencies]
@@ -51,21 +52,30 @@ Homepage = "https://github.com/your-org/scat_lib"
 Documentation = "https://scat-lib.readthedocs.io"
 Repository = "https://github.com/your-org/scat_lib"
 
+[project.scripts]
+scat-lib-build = "scat_lib.build:main"
+
 [tool.setuptools]
+include-package-data = true
 packages = [
     "scat_lib",
     "scat_lib.iam",
     "scat_lib.iam.providers",
     "scat_lib.pyscf_scat",
-    "scat_lib.gas_iam"
+    "scat_lib.gas_iam",
+    "scat_lib.fortran_src"
 ]
 
+[tool.setuptools.package-dir]
+"scat_lib.fortran_src" = "src"
+
 [tool.setuptools.package-data]
-"scat_lib" = ["*.py"]
+"scat_lib" = ["bin/*", "*.py"]
 "scat_lib.iam" = ["data/*.txt", "*.py"]
 "scat_lib.iam.providers" = ["*.py"]
 "scat_lib.pyscf_scat" = ["*.py"]
 "scat_lib.gas_iam" = ["*.py","data/*.txt", "*.txt"]
+"scat_lib.fortran_src" = ["*.f", "*.f90", "*.f95", "*.F90", "build/*.f", "build/*.f90", "build/*.f95", "build/*.F90", "build/*.sh"]
 
 [tool.black]
 line-length = 88

@@ -1,0 +1,2 @@
+[console_scripts]
+scat-lib-build = scat_lib.build:main

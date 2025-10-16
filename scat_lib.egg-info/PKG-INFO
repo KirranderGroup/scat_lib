@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: scat_lib
-Version: 0.1.0
+Version: 1.0.0
 Summary: A Python library for calculating X-ray scattering from ab initio electronic structure calculations using PySCF
 Author: Patrick Wang
 License: MIT
@@ -25,6 +25,8 @@ Requires-Dist: matplotlib>=3.5.0
 Requires-Dist: seaborn>=0.11.0
 Requires-Dist: colorcet>=2.0.0
 Requires-Dist: pyscf-forge@ git+https://github.com/pyscf/pyscf-forge
+Requires-Dist: xraydb>=4.4
+Requires-Dist: importlib_resources>=5; python_version < "3.9"
 Provides-Extra: docs
 Requires-Dist: sphinx>=4.0.0; extra == "docs"
 Requires-Dist: sphinx-rtd-theme; extra == "docs"
@@ -51,5 +53,3 @@ As of this restructure, all PySCF-dependent scattering utilities have been group
 - `scat_lib.pyscf_scat.fit_utils` (fitting/plot helpers)
 
 For backward compatibility, thin wrappers remain at the old top-level module paths (e.g., `scat_lib.scat_calc`) that re-export from the new subpackage. New code should import from `scat_lib.pyscf_scat.*`.
-
-## `ci_to_2rdm.py`

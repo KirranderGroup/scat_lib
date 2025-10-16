@@ -1,0 +1,2 @@
+recursive-include scat_lib/bin *
+recursive-include src *
