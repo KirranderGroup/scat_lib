@@ -6,11 +6,8 @@ from scat_calc import types
 def _make_zcontraction_option(
         mldfile,
         file_name,
-        one_rdm_file,
         two_rdm_file,
-        molden_file,
         type='total',
-        log_file='scat.log',
         q_range = (1E-10,250),
         q_points = 1000,
         cutoffcentre = 1E-2,
@@ -18,9 +15,43 @@ def _make_zcontraction_option(
         cutoffmd = 1e-20,
         state1 = 1,
         state2 = 1,
-        state3 = 1,
         path= None):
+    '''
+    Creates the options.dat file needed for Z-contraction calculations.
+    Parameters
+    ----------
+    mldfile : str
+        The path to the Molden file.
+    file_name : str
+        The name of the output file.
+    two_rdm_file : str
+        The path to the 2-RDM file.
+    type : str, optional
+        The type of calculation. Options are 'total', 'elastic', 'inelastic', '
+        'total_aligned', 'elastic_aligned', 'inelastic_aligned', 'total_electron',
+        'elastic_electron', 'inelastic_electron', 'total_j2'
+        'elastic_j2', 'inelastic_j2'. Default is 'total'.
+    q_range : tuple, optional
+        The range of q values to calculate, in a.u. Default is (1E-10, 250).
+    q_points : int, optional
+        The number of q points to calculate. Default is 1000.
+    cutoffcentre : float, optional
+        The cutoff for the Z integral. Default is 0.01.
+    cutoffz : float, optional
+        The cutoff for the Z integral. Default is 1E-9.
+    cutoffmd : float, optional
+        The cutoff for the product of the MD coefficients. Default is 1E-20.
+    state1 : int, optional
+        The first state to consider. Default is 1.
+    state2 : int, optional
+        The second state to consider. Default is 1.
+    path : str, optional
+        The path to the directory where the options.dat file will be saved. Default is the current directory.
+    Returns
+    -------
+    None
     
+    '''
     
     Nmo_max = 600
 
