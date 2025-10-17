@@ -113,8 +113,8 @@ def make_rdm2_on_ROHF(mf, mol, separate_components=False):
         return dm_el, dm_inel
 
     else:
-        Gamma = Gamma_tot
-        dm = mo2ao.create_Zcotr(mf, mol, Gamma)
+        Gamma_tot = np.transpose(Gamma_tot, (0, 2, 1, 3)) # to chemists notation
+        dm = mo2ao.create_Zcotr(mf, mol, Gamma_tot)
         return dm
 
 

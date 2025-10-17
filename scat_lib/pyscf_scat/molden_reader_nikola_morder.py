@@ -276,17 +276,11 @@ def _read_contractions(file):
             contraction_counter += len(ang)
     else:
         print("Something went wrong! Can't find [MO]")
-    print('size GTOS', np.size(GTOs))
     contr=[]
     for a in (GTOs):
         contr.append(a.contraction)
     contr=np.asarray(contr)
-    print('contr',contr)
     idx=np.argsort(contr, kind='mergesort')
-    print(contr[idx])
-
-    print(idx)
-
     return GTOs, groupC,idx,contr
 
 
@@ -360,21 +354,18 @@ def _read_MO(file, mo_cutoff):
 
     # redored the MO according to the Molpro labels
     nMO = len(syms)
-    print('the size of the mos is ', nMO)
     syms_array = np.array([float(i) for i in syms])
     occ_array = np.array([float(i) for i in occ])
     finalind=np.where(occ_array>0.0000000)
     # print('First 0 would work?', finalind)
     #syms_array=syms_array[finalind]
     idx1 = np.argsort(syms_array)
-    print('previous order', syms)
     syms_array = (syms_array - syms_array.astype(int)) * 1000 + syms_array.astype(int)
 
     idx = np.argsort(syms_array)
 
     mo = np.array(mo_table)
     syms_array = np.array([float(i) for i in syms])
-    print('after order', syms_array[idx])
 
     #mo = mo[idx, :]
 
@@ -383,7 +374,6 @@ def _read_MO(file, mo_cutoff):
 
     occ_array = np.array(occ)
    # occ_array = occ_array[idx]
-    print('final occupation is', sum(occ_array), 'with ', np.size(idx))
 
     return (np.transpose(mo), occ_array, energy_array, syms_array)
 
@@ -463,10 +453,8 @@ def _normalise_gto(GTOs):
     for i in GTOs:
         i.mo = i.c * i.norm() * i.mo
         coeffs.append(i.c * i.norm())
-        print('coeff',i.c, i.norm())
         mos.append(i.mo)
     coeffs = np.asarray(coeffs)
-    print(coeffs.shape)
     return coeffs, mos
 
 
