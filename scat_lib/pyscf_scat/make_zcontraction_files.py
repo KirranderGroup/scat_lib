@@ -1,5 +1,5 @@
 import numpy as np
-import molden_reader_nikola_morder as mldreader
+from . import molden_reader_nikola_morder as mldreader
 import os
 from scat_calc import types
 
