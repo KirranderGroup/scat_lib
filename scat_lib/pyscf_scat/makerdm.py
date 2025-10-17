@@ -76,7 +76,7 @@ def _make_rdm12_on_mo(casdm1, casdm2, ncore, ncas, nmo):
     return dm1, dm2
 
 
-def make_rdm2_on_ROHF(mf, mol):
+def make_rdm2_on_ROHF(mf, mol, separate_components=False):
     '''
     Makes the 2-RDM for a ROHF calculation in AO basis.
 
@@ -101,11 +101,21 @@ def make_rdm2_on_ROHF(mf, mol):
     Na = np.diag(na)
     Nb = np.diag(nb)
     N = np.diag(n)
-    Gamma = (
-        np.einsum('ik,jl->ijkl', N, N, optimize=True) - np.einsum('il,jk->ijkl', Na, Na, optimize=True) - np.einsum('il,jk->ijkl', Nb, Nb, optimize=True)
-    )
-    Gamma = np.transpose(Gamma, (0, 2, 1, 3)) # to chemists notation
-    dm = mo2ao.create_Zcotr(mf, mol, Gamma)
-    return dm
+    Gamma_el = (np.einsum('ik,jl->ijkl', N, N, optimize=True))
+    Gamma_inel = (-np.einsum('il,jk->ijkl', Na, Na, optimize=True) - np.einsum('il,jk->ijkl', Nb, Nb, optimize=True))
+    Gamma_tot = Gamma_el + Gamma_inel
+
+    if separate_components:
+        Gamma_el = np.transpose(Gamma_el, (0, 2, 1, 3)) # to chemists notation
+        Gamma_inel = np.transpose(Gamma_inel, (0, 2, 1, 3)) # to chemists notation
+        dm_el = mo2ao.create_Zcotr(mf, mol, Gamma_el)
+        dm_inel = mo2ao.create_Zcotr(mf, mol, Gamma_inel)
+        return dm_el, dm_inel
+
+    else:
+        Gamma = Gamma_tot
+        dm = mo2ao.create_Zcotr(mf, mol, Gamma)
+        return dm
+
 
 
