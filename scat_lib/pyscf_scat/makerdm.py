@@ -102,11 +102,10 @@ def make_rdm2_on_ROHF(mf, mol):
     Nb = np.diag(nb)
     N = np.diag(n)
     Gamma = (
-        np.einsum('ik,jl->ijkl', N, N, optimize=True) - np.einsum('ik,jl->ijkl', Na, Na, optimize=True) - np.einsum('il,jk->ijkl', Nb, Nb, optimize=True)
+        np.einsum('ik,jl->ijkl', N, N, optimize=True) - np.einsum('il,jk->ijkl', Na, Na, optimize=True) - np.einsum('il,jk->ijkl', Nb, Nb, optimize=True)
     )
     Gamma = np.transpose(Gamma, (0, 2, 1, 3)) # to chemists notation
     dm = mo2ao.create_Zcotr(mf, mol, Gamma)
-
     return dm
 
 
