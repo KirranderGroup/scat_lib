@@ -340,7 +340,7 @@ contains
         count1 = 0
         allocate(Zbig(ncontr,ncontr,ncontr,ncontr))
 
-        open(40, file='Zcotr.dat', status='old', access='stream', form='unformatted')
+        open(40, file='2rdmAO', status='old', access='stream', form='unformatted')
         read(40) Zbig
         close(40)
         print*,'starting loop'
