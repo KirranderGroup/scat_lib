@@ -1,7 +1,17 @@
 import numpy as np
 from . import molden_reader_nikola_morder as mldreader
 import os
-from scat_calc import types
+
+
+types = {'total': '1', 
+         'elastic':'2',
+         'total_aligned': '3',
+         'elastic_aligned' : '4',
+         'total_electron' : '5',
+         'elastic_electron' : '6',
+         'total_j2' : '7',
+         'elastic_j2' :'8',
+         'resolved_cms' : '9'}
 
 def _make_zcontraction_option(
         mldfile,
