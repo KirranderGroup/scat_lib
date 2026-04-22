@@ -334,13 +334,13 @@ def _read_MO(file, mo_cutoff):
             # the coefficient for this orbitals
             mo_this = []
         elif "Ene" in line:
-            s = re.findall("\d+\.\d+", line)
+            s = re.findall(r"[-+]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][-+]?\d+)?", line)
             energy.append(float(s[0]))
         elif "Spin" in line:
             s = line.split()
             spin.append(s[1].strip())
         elif "Occup" in line:
-            oc = re.findall("\d+\.\d+", line)
+            oc = re.findall(r"[-+]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][-+]?\d+)?", line)
             occ.append(float(oc[0]))
         else:
             temp = line.split()
