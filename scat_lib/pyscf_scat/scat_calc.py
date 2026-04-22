@@ -495,6 +495,135 @@ def run_scattering_zcotr(
 
 
 
+def _transform_rdm1(dm1, M):
+    """Rotate a 1-RDM from its native basis into a target basis.
+
+    Given a basis relationship ``C_native = C_target @ M`` between two orbital
+    sets that span the same AO space, the 1-RDM transforms as
+    ``dm_target = M @ dm_native @ M.T``.
+    """
+    return M @ dm1 @ M.T
+
+
+def _transform_rdm2(dm2, M):
+    """Rotate a 2-RDM using the same basis map ``M`` used for the 1-RDM."""
+    return np.einsum('ip,jq,kr,ls,pqrs->ijkl', M, M, M, M, dm2, optimize=True)
+
+
+def _basis_map(C_target, C_native, S):
+    """Return ``M`` such that ``C_native = C_target @ M``.
+
+    Uses ``M = C_target.T @ S @ C_native`` which is exact when the targets are
+    orthonormal in the AO overlap ``S`` and span the native orbitals.
+    """
+    return C_target.T @ S @ C_native
+
+
+def _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type):
+    """Resolve the MO set and RDMs consistent with ``orbital_type``.
+
+    Returns a dict with ``mo_coeff``, ``mo_occ``, ``mo_energy`` describing the
+    orbital basis that must be written to the molden file, plus ``dm1`` and
+    ``dm2`` expressed in that exact basis.
+    """
+    is_casscf_like = hasattr(pyscf_obj, 'fcisolver') and hasattr(pyscf_obj, 'ci')
+    is_ccsd_like = (
+        not is_casscf_like
+        and hasattr(pyscf_obj, 'make_rdm1')
+        and hasattr(pyscf_obj, 'make_rdm2')
+    )
+    if not (is_casscf_like or is_ccsd_like):
+        raise TypeError(
+            "Unsupported pyscf_obj type. Expected a CASSCF/DMRG-SCF object or a CCSD object."
+        )
+
+    if is_casscf_like:
+        native_mo_coeff = pyscf_obj.mo_coeff
+        native_mo_occ = getattr(pyscf_obj, 'mo_occ', None)
+        native_mo_energy = getattr(pyscf_obj, 'mo_energy', None)
+        nelecas = pyscf_obj.nelecas
+        ncas = pyscf_obj.ncas
+        ncore = pyscf_obj.ncore
+        nmo = native_mo_coeff.shape[1]
+        if isinstance(pyscf_obj.fcisolver, DMRGCI):
+            casdm1, casdm2 = pyscf_obj.fcisolver.make_rdm12(0, ncas, nelecas)
+        else:
+            casdm1, casdm2 = pyscf_obj.fcisolver.make_rdm12(pyscf_obj.ci, ncas, nelecas)
+        dm1, dm2 = makerdm._make_rdm12_on_mo(casdm1, casdm2, ncore, ncas, nmo)
+    else:
+        native_mo_coeff = mf.mo_coeff
+        native_mo_occ = getattr(mf, 'mo_occ', None)
+        native_mo_energy = getattr(mf, 'mo_energy', None)
+        try:
+            dm1 = pyscf_obj.make_rdm1(ao_repr=False)
+            dm2 = pyscf_obj.make_rdm2(ao_repr=False)
+        except TypeError:
+            dm1 = pyscf_obj.make_rdm1()
+            dm2 = pyscf_obj.make_rdm2()
+
+    mol = mf.mol
+    ot = (orbital_type or '').lower()
+
+    if ot == 'hf':
+        target_mo_coeff = mf.mo_coeff
+        target_mo_occ = getattr(mf, 'mo_occ', None)
+        target_mo_energy = getattr(mf, 'mo_energy', None)
+        if is_casscf_like:
+            S = mol.intor('int1e_ovlp')
+            M = _basis_map(target_mo_coeff, native_mo_coeff, S)
+            dm1 = _transform_rdm1(dm1, M)
+            dm2 = _transform_rdm2(dm2, M)
+        molden_kind = 'mf'
+    elif ot == 'casscf':
+        if not is_casscf_like:
+            raise ValueError("orbital_type='CASSCF' requires a CASSCF/DMRG-SCF pyscf_obj.")
+        target_mo_coeff = native_mo_coeff
+        target_mo_occ = native_mo_occ
+        target_mo_energy = native_mo_energy
+        molden_kind = 'mcscf'
+    elif ot in ('no', 'natural', 'natural_orbital', 'natural_orbitals'):
+        occs, U = np.linalg.eigh(dm1)
+        order = np.argsort(occs)[::-1]
+        occs = occs[order]
+        U = U[:, order]
+        dm1 = U.T @ dm1 @ U
+        dm2 = _transform_rdm2(dm2, U.T)
+        target_mo_coeff = native_mo_coeff @ U
+        target_mo_occ = occs
+        target_mo_energy = None
+        molden_kind = 'mo'
+    else:
+        raise ValueError(
+            f"Unknown orbital_type '{orbital_type}'. "
+            "Supported values: 'HF', 'CASSCF', 'natural'."
+        )
+
+    return {
+        'mo_coeff': target_mo_coeff,
+        'mo_occ': target_mo_occ,
+        'mo_energy': target_mo_energy,
+        'dm1': dm1,
+        'dm2': dm2,
+        'molden_kind': molden_kind,
+    }
+
+
+def _write_molden(info, pyscf_obj, mf, molden_file):
+    kind = info['molden_kind']
+    if kind == 'mf':
+        tools.molden.dump_scf(mf, molden_file)
+    elif kind == 'mcscf':
+        tools.molden.from_mcscf(pyscf_obj, molden_file)
+    else:
+        tools.molden.from_mo(
+            mf.mol,
+            molden_file,
+            info['mo_coeff'],
+            ene=info['mo_energy'],
+            occ=info['mo_occ'],
+        )
+
+
 def run_scattering_pyscf(
         pyscf_obj,
         mf,
@@ -513,7 +642,7 @@ def run_scattering_pyscf(
         state3 = 1,
         **kwargs
         ):
-    
+
     """
     Runs scattering calculation on a given one_rdm and two_rdm file.
 
@@ -527,7 +656,13 @@ def run_scattering_pyscf(
     file_name : str
         The output scattering file name
     orbital_type : str
-        The type of orbitals to be used, either 'HF' or 'CASSCF'.
+        Orbital basis that will be written to the molden file AND used to build
+        the RDMs written to disk. Supported values:
+          - 'HF'     : HF canonical MOs (``mf.mo_coeff``). CASSCF-basis RDMs are
+                       rotated into this basis with the AO overlap.
+          - 'CASSCF' : CASSCF MOs from ``pyscf_obj.mo_coeff`` (CASSCF only).
+          - 'natural': natural orbitals obtained by diagonalizing the 1-RDM
+                       in whatever basis the wavefunction provides.
     backend : str
         The backend to be used for the calculation, defaults to 'normal'.
         Choices are 'normal' and 'zcotr'.
@@ -551,7 +686,7 @@ def run_scattering_pyscf(
         The second state to be considered in the scattering calculation.
     state3 : int
         The third state to be considered in the scattering calculation.
-    
+
     Returns
     -------
     q : array_like
@@ -560,58 +695,22 @@ def run_scattering_pyscf(
         An array of intensity values at the corresponding q
     """
 
-    is_casscf_like = hasattr(pyscf_obj, 'fcisolver') and hasattr(pyscf_obj, 'ci')
-    is_ccsd_like = hasattr(pyscf_obj, 'make_rdm1') and hasattr(pyscf_obj, 'make_rdm2')
+    info = _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type)
+    dm1 = info['dm1']
+    dm2 = info['dm2']
+    mo_coeff = info['mo_coeff']
 
-    if not (is_casscf_like or is_ccsd_like):
-        raise TypeError(
-            "Unsupported pyscf_obj type. Expected a CASSCF/DMRG-SCF object or a CCSD object."
-        )
-
-    if is_casscf_like:
-        if isinstance(pyscf_obj.fcisolver, DMRGCI):
-            _ci = pyscf_obj.ci
-            nelecas = pyscf_obj.nelecas
-            ncas = pyscf_obj.ncas
-            ncore = pyscf_obj.ncore
-            nmo = pyscf_obj.mo_coeff.shape[1]
-            dm1, dm2 = pyscf_obj.fcisolver.make_rdm12(0, pyscf_obj.ncas, pyscf_obj.nelecas)
-        else:
-            _ci = pyscf_obj.ci
-            nelecas = pyscf_obj.nelecas
-            ncas = pyscf_obj.ncas
-            ncore = pyscf_obj.ncore
-            nmo = pyscf_obj.mo_coeff.shape[1]
-            casdm1, casdm2 = pyscf_obj.fcisolver.make_rdm12(_ci, ncas, nelecas)
-            dm1, dm2 = makerdm._make_rdm12_on_mo(casdm1, casdm2, ncore, ncas, nmo)
-    else:
-        try:
-            dm1 = pyscf_obj.make_rdm1(ao_repr=False)
-            dm2 = pyscf_obj.make_rdm2(ao_repr=False)
-        except TypeError:
-            dm1 = pyscf_obj.make_rdm1()
-            dm2 = pyscf_obj.make_rdm2()
-        nmo = dm1.shape[0]
+    molden_file = f'{file_name}.molden'
+    _write_molden(info, pyscf_obj, mf, molden_file)
 
     if backend == 'zcotr':
-        
-        if orbital_type == 'HF':
-            tools.molden.dump_scf(mf, f'{file_name}.molden')
-        elif orbital_type == 'CASSCF':
-            if not is_casscf_like:
-                raise ValueError("orbital_type='CASSCF' requires a CASSCF/DMRG-SCF pyscf_obj.")
-            tools.molden.from_mcscf(pyscf_obj, f'{file_name}.molden')
-        
-        pthresh=1e-17
-
-
-        dm3 = mo2ao.create_Zcotr(mf, mf.mol, dm2)
-        dm3.tofile(f'2rdmAO')
+        dm3 = mo2ao.create_Zcotr(mf, mf.mol, dm2, mo_coeff=mo_coeff)
+        dm3.tofile('2rdmAO')
 
         result = run_scattering_zcotr(file_name,
-                                f'1rdm_{file_name}.txt', 
-                                f'2rdmAO',
-                                f'{file_name}.molden',
+                                f'1rdm_{file_name}.txt',
+                                '2rdmAO',
+                                molden_file,
                                 type=type,
                                 log_file=log_file,
                                 q_range = q_range,
@@ -625,25 +724,15 @@ def run_scattering_pyscf(
                                 **kwargs)
         return result
 
-
     if backend == 'normal':
-        if orbital_type == 'HF':
-            tools.molden.dump_scf(mf, f'{file_name}.molden')
-        elif orbital_type == 'CASSCF':
-            if not is_casscf_like:
-                raise ValueError("orbital_type='CASSCF' requires a CASSCF/DMRG-SCF pyscf_obj.")
-            tools.molden.from_mcscf(pyscf_obj, f'{file_name}.molden')
-
         no_mos = dm1.shape[0]
-
-        pthresh=1e-17
+        pthresh = 1e-17
 
         with open(f'1rdm_{file_name}.txt', 'w') as f:
             for i in range(no_mos):
                 for j in range(no_mos):
-                    if np.abs(dm1[i,j]) > pthresh:
+                    if np.abs(dm1[i, j]) > pthresh:
                         f.write(f"{i+1: 3d}  {j+1: 3d}  {dm1[i, j]}\n")
-
 
         with open(f'2rdm_{file_name}.txt', 'w') as f:
             for i in range(no_mos):
@@ -655,10 +744,10 @@ def run_scattering_pyscf(
                                     f"{i+1: 3d}  {j+1: 3d}  {k+1: 3d}  {l+1: 3d}  {dm2[i, j, k, l]}\n"
                                 )
 
-        result = run_scattering(file_name, 
-                                f'1rdm_{file_name}.txt', 
-                                f'2rdm_{file_name}.txt', 
-                                f'{file_name}.molden',
+        result = run_scattering(file_name,
+                                f'1rdm_{file_name}.txt',
+                                f'2rdm_{file_name}.txt',
+                                molden_file,
                                 type=type,
                                 log_file=log_file,
                                 q_range = q_range,
@@ -671,6 +760,8 @@ def run_scattering_pyscf(
                                 state3 = state3,
                                 **kwargs)
         return result
+
+    raise ValueError(f"Unknown backend '{backend}'. Choose 'normal' or 'zcotr'.")
 
 def run_scattering_csf(
         csf,
