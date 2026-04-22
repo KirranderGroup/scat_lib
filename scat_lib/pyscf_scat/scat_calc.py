@@ -634,12 +634,27 @@ def _write_molden(info, pyscf_obj, mf, molden_file):
     elif kind == 'mcscf':
         tools.molden.from_mcscf(pyscf_obj, molden_file)
     else:
+        mo_coeff = info['mo_coeff']
+        ene = info['mo_energy']
+        occ = info['mo_occ']
+        nmo = mo_coeff.shape[1]
+        # pyscf's molden writer formats energies with '%15.10g', which drops
+        # the decimal point for exact integers (including zero) and then
+        # trips up downstream molden readers that expect a float. Provide a
+        # non-integer stand-in when no physical energies are available.
+        # For natural orbitals, the negated occupation is a conventional
+        # proxy (strongly-occupied NOs sort like filled canonical MOs).
+        if ene is None:
+            if occ is not None:
+                ene = -np.asarray(occ, dtype=float) - 1e-12
+            else:
+                ene = np.linspace(-1e-6, -1e-12, nmo)
         tools.molden.from_mo(
             mf.mol,
             molden_file,
-            info['mo_coeff'],
-            ene=info['mo_energy'],
-            occ=info['mo_occ'],
+            mo_coeff,
+            ene=ene,
+            occ=occ,
         )
 
 
