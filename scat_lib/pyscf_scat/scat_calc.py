@@ -495,6 +495,25 @@ def run_scattering_zcotr(
 
 
 
+def _fcisolver_uses_state_index(fcisolver):
+    """Return True if ``fcisolver.make_rdm12`` expects a state index as its
+    first argument rather than a ci vector/coefficient array.
+
+    The default pyscf FCI solver takes ``(ci, norb, nelec)``. External solvers
+    such as DMRG (``pyscf.dmrgscf``) and SHCI (``pyscf.shciscf``) store their
+    wavefunctions on disk and expect an integer state index instead.
+    """
+    if isinstance(fcisolver, DMRGCI):
+        return True
+    cls = type(fcisolver)
+    module = getattr(cls, '__module__', '') or ''
+    if module.startswith(('pyscf.dmrgscf', 'pyscf.shciscf')):
+        return True
+    if cls.__name__ in ('SHCI', 'DMRGCI'):
+        return True
+    return False
+
+
 def _transform_rdm1(dm1, M):
     """Rotate a 1-RDM from its native basis into a target basis.
 
@@ -545,7 +564,7 @@ def _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type):
         ncas = pyscf_obj.ncas
         ncore = pyscf_obj.ncore
         nmo = native_mo_coeff.shape[1]
-        if isinstance(pyscf_obj.fcisolver, DMRGCI):
+        if _fcisolver_uses_state_index(pyscf_obj.fcisolver):
             casdm1, casdm2 = pyscf_obj.fcisolver.make_rdm12(0, ncas, nelecas)
         else:
             casdm1, casdm2 = pyscf_obj.fcisolver.make_rdm12(pyscf_obj.ci, ncas, nelecas)
