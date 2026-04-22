@@ -83,28 +83,44 @@ def norm_reorder_MOs(mos,mol):
 
 
 
-def create_Zcotr(mf,mol,dm2): 
+def create_Zcotr(mf, mol, dm2, mo_coeff=None):
     '''
     Create and save the symmetrized 2RDM in AO basis to a binary file 'Zcotr.dat'.
+
+    The MO coefficients used for the MO->AO transform MUST match the basis in
+    which ``dm2`` was built. Pass ``mo_coeff`` explicitly whenever the RDM was
+    produced in a basis other than ``mf.mo_coeff`` (e.g. CASSCF MOs or natural
+    orbitals). Otherwise the HF MOs from ``mf`` are used.
+
     Parameters
     ----------
-    mf : pyscf.scf.SCF
-        PySCF mean-field object containing MO coefficients.
+    mf : pyscf.scf.SCF or None
+        PySCF mean-field object. Only used to fetch MO coefficients when
+        ``mo_coeff`` is not provided.
     mol : pyscf.gto.Mole
         PySCF molecule object.
     dm2 : np.ndarray
         4-dimensional array representing the 2-RDM in MO basis.
+    mo_coeff : np.ndarray, optional
+        AO x MO matrix describing the orbital basis in which ``dm2`` lives. When
+        given, overrides ``mf.mo_coeff``.
+
     Returns
     -------
     dm3 : np.ndarray
         4-dimensional array representing the symmetrized 2-RDM in AO basis.
     '''
 
-    dm2=dm2.transpose(1,0,3,2)
-    mos = norm_reorder_MOs(mf.mo_coeff,mol)
-    dm2_sym = symmetrize8(dm2)           # fast in MO space
+    if mo_coeff is None:
+        if mf is None:
+            raise ValueError("create_Zcotr requires either 'mo_coeff' or an 'mf' object with mo_coeff.")
+        mo_coeff = mf.mo_coeff
+
+    dm2 = dm2.transpose(1, 0, 3, 2)
+    mos = norm_reorder_MOs(mo_coeff, mol)
+    dm2_sym = symmetrize8(dm2)                 # fast in MO space
     dm3 = mo2ao_2rdm_halftrans(dm2_sym, mos)   # single AO transform
-    
+
     return dm3
     
       
