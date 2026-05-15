@@ -495,6 +495,7 @@ def run_scattering_zcotr(
 
 
 
+
 def _fcisolver_uses_state_index(fcisolver):
     """Return True if ``fcisolver.make_rdm12`` expects a state index as its
     first argument rather than a ci vector/coefficient array.
@@ -545,6 +546,9 @@ def _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type):
     orbital basis that must be written to the molden file, plus ``dm1`` and
     ``dm2`` expressed in that exact basis.
     """
+
+    is_FCI_like = ("<class 'pyscf.fci.FCI.<locals>.CISolver'>" in str(type(pyscf_obj.fcisolver)))
+
     is_casscf_like = hasattr(pyscf_obj, 'fcisolver') and hasattr(pyscf_obj, 'ci')
     is_ccsd_like = (
         not is_casscf_like
@@ -557,6 +561,7 @@ def _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type):
         )
 
     if is_casscf_like:
+        is_FCI = is_FCI_like
         native_mo_coeff = pyscf_obj.mo_coeff
         native_mo_occ = getattr(pyscf_obj, 'mo_occ', None)
         native_mo_energy = getattr(pyscf_obj, 'mo_energy', None)
@@ -569,6 +574,9 @@ def _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type):
         else:
             casdm1, casdm2 = pyscf_obj.fcisolver.make_rdm12(pyscf_obj.ci, ncas, nelecas)
         dm1, dm2 = makerdm._make_rdm12_on_mo(casdm1, casdm2, ncore, ncas, nmo)
+
+    if is_FCI_like:
+        dm1, dm2 = pyscf_obj.make_rdm12(pyscf_obj.ci, pyscf_obj.ncas, pyscf_obj.nelecas)
     else:
         native_mo_coeff = mf.mo_coeff
         native_mo_occ = getattr(mf, 'mo_occ', None)
@@ -728,14 +736,16 @@ def run_scattering_pyscf(
     intensity : array_like
         An array of intensity values at the corresponding q
     """
-
+    is_FCI = ("<class 'pyscf.fci.FCI.<locals>.CISolver'>" in str(type(pyscf_obj.fcisolver)))
     info = _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type)
     dm1 = info['dm1']
     dm2 = info['dm2']
     mo_coeff = info['mo_coeff']
 
+
     molden_file = f'{file_name}.molden'
     _write_molden(info, pyscf_obj, mf, molden_file)
+
 
     if backend == 'zcotr':
         dm3 = mo2ao.create_Zcotr(mf, mf.mol, dm2, mo_coeff=mo_coeff)
