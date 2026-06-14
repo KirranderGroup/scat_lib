@@ -349,7 +349,9 @@ def run_scattering(
         state1 = 1,
         state2 = 1,
         state3 = 1,
-        clean_files=True
+        clean_files=True,
+        engine='fortran',
+        fortran_pi=False
 ):
     """
     Runs scattering calculation on a given one_rdm and two_rdm file.
@@ -399,9 +401,14 @@ def run_scattering(
     #print(f'Running scattering with type {type} and file {file_name}')
 
     try:
-        executable = _resolve_executable(SCAT_DIR, 'Main.exe', fallback_names=('Main2.exe',))
-        _run_scattering_executable(executable, log_file)
-        result = _load_scattering_result(file_name, executable, log_file)
+        if engine == 'julia':
+            from . import julia_backend
+            result = julia_backend.run_julia(file_name, type=type,
+                                             one_rdm_file=one_rdm_file, fortran_pi=fortran_pi)
+        else:
+            executable = _resolve_executable(SCAT_DIR, 'Main.exe', fallback_names=('Main2.exe',))
+            _run_scattering_executable(executable, log_file)
+            result = _load_scattering_result(file_name, executable, log_file)
     except Exception as e:
         raise RuntimeError(f"Error running scattering backend from SCAT_DIR='{SCAT_DIR}'") from e
     
@@ -426,7 +433,9 @@ def run_scattering_zcotr(
         state1 = 1,
         state2 = 1,
         state3 = 1,
-        clean_files=True
+        clean_files=True,
+        engine='fortran',
+        fortran_pi=False
         ):
     """
     Runs scattering calculation using zcotr backend on a given one_rdm and two_rdm
@@ -480,10 +489,14 @@ def run_scattering_zcotr(
         path='./'
     )
     try:
-        print(f'Running scattering with zcotr backend with type {type} and file {file_name}')
-        executable = _resolve_executable(ZCOTR_EXE, 'Main2.exe')
-        _run_scattering_executable(executable, log_file)
-        result = _load_scattering_result(file_name, executable, log_file)
+        if engine == 'julia':
+            from . import julia_backend
+            result = julia_backend.run_julia(file_name, type=type, fortran_pi=fortran_pi)
+        else:
+            print(f'Running scattering with zcotr backend with type {type} and file {file_name}')
+            executable = _resolve_executable(ZCOTR_EXE, 'Main2.exe')
+            _run_scattering_executable(executable, log_file)
+            result = _load_scattering_result(file_name, executable, log_file)
     except Exception as e:
         raise RuntimeError(f"Error running zcotr backend from ZCOTR_EXE='{ZCOTR_EXE}'") from e
     
@@ -672,6 +685,8 @@ def run_scattering_pyscf(
         file_name,
         orbital_type = 'HF',
         backend = 'normal',
+        engine = 'fortran',
+        fortran_pi = False,
         type='total',
         log_file='scat.log',
         q_range = (1E-10,250),
@@ -765,6 +780,8 @@ def run_scattering_pyscf(
                                 state1 = state1,
                                 state2 = state2,
                                 state3 = state3,
+                                engine = engine,
+                                fortran_pi = fortran_pi,
                                 **kwargs)
         return result
 
@@ -802,6 +819,8 @@ def run_scattering_pyscf(
                                 state1 = state1,
                                 state2 = state2,
                                 state3 = state3,
+                                engine = engine,
+                                fortran_pi = fortran_pi,
                                 **kwargs)
         return result
 
