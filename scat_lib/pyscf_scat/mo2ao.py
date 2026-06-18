@@ -85,7 +85,8 @@ def norm_reorder_MOs(mos,mol):
 
 def create_Zcotr(mf, mol, dm2, mo_coeff=None):
     '''
-    Create and save the symmetrized 2RDM in AO basis to a binary file 'Zcotr.dat'.
+    Create the symmetrized 2RDM in AO basis (returned; the caller writes it to the
+    binary file '2rdmAO').
 
     The MO coefficients used for the MO->AO transform MUST match the basis in
     which ``dm2`` was built. Pass ``mo_coeff`` explicitly whenever the RDM was
@@ -122,7 +123,49 @@ def create_Zcotr(mf, mol, dm2, mo_coeff=None):
     dm3 = mo2ao_2rdm_halftrans(dm2_sym, mos)   # single AO transform
 
     return dm3
-    
+
+
+def create_Zonerdm(mf, mol, dm1, mo_coeff=None):
+    '''
+    Create the contracted-AO-basis 1RDM (the 1RDM analogue of ``create_Zcotr``),
+    used by the AO-elastic path (written to '1rdmAO').
+
+        z_AO(mu,nu) = sum_pq  mos(mu,p) mos(nu,q) dm1(p,q)
+
+    The SAME ``norm_reorder_MOs`` transform ``mos`` used by ``create_Zcotr`` for the
+    2RDM is used here, so '1rdmAO' and '2rdmAO' share the identical contracted-AO
+    frame (the engine re-applies the per-primitive contraction coefficients). The
+    1RDM is symmetric, so its 2-index symmetrization is simply ``(dm1 + dm1.T)/2``
+    (the 1-index analogue of ``symmetrize8``).
+
+    Parameters
+    ----------
+    mf : pyscf.scf.SCF or None
+        Mean-field object; only used to fetch ``mo_coeff`` when not given.
+    mol : pyscf.gto.Mole
+        PySCF molecule object.
+    dm1 : np.ndarray
+        2-dimensional MO-basis 1-RDM, in the same orbital basis as ``mo_coeff``.
+    mo_coeff : np.ndarray, optional
+        AO x MO matrix describing the basis ``dm1`` lives in (overrides ``mf``).
+
+    Returns
+    -------
+    z_ao : np.ndarray
+        Contracted-AO-basis 1RDM, shape (ncontr, ncontr).
+    '''
+
+    if mo_coeff is None:
+        if mf is None:
+            raise ValueError("create_Zonerdm requires either 'mo_coeff' or an 'mf' object with mo_coeff.")
+        mo_coeff = mf.mo_coeff
+
+    mos = norm_reorder_MOs(mo_coeff, mol)
+    dm1_sym = 0.5 * (dm1 + dm1.T)
+    z_ao = mos @ dm1_sym @ mos.T
+
+    return z_ao
+
       
 def mo2ao_2rdm_split(dm2_mo, C):
     """

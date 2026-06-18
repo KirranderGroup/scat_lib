@@ -157,6 +157,9 @@ def _cleanup_scattering_files(file_name, extra_files=None):
         'MOs2.dat',
         'coeffs.dat',
         '2rdm.txt',
+        '2rdmAO',
+        '1rdmAO',
+        'onerdm.dat',
         f'1rdm_{file_name}.txt',
         f'2rdm_{file_name}.txt',
         f'{file_name}.molden',
@@ -763,12 +766,21 @@ def run_scattering_pyscf(
 
 
     if backend == 'zcotr':
-        dm3 = mo2ao.create_Zcotr(mf, mf.mol, dm2, mo_coeff=mo_coeff)
-        dm3.tofile('2rdmAO')
+        # AO path: write the dense contracted-AO density the engine needs.
+        #   elastic -> 1rdmAO (ncontr^2; engine forms z(p,q)*z(r,s))
+        #   total   -> 2rdmAO (ncontr^4)
+        if 'elastic' in str(type).lower():
+            z_ao = mo2ao.create_Zonerdm(mf, mf.mol, dm1, mo_coeff=mo_coeff)
+            z_ao.tofile('1rdmAO')
+            ao_rdm_file = '1rdmAO'
+        else:
+            dm3 = mo2ao.create_Zcotr(mf, mf.mol, dm2, mo_coeff=mo_coeff)
+            dm3.tofile('2rdmAO')
+            ao_rdm_file = '2rdmAO'
 
         result = run_scattering_zcotr(file_name,
                                 f'1rdm_{file_name}.txt',
-                                '2rdmAO',
+                                ao_rdm_file,
                                 molden_file,
                                 type=type,
                                 log_file=log_file,
