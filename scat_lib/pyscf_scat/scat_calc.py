@@ -3,7 +3,10 @@ import sys
 import subprocess
 from pathlib import Path
 from pyscf import gto, mcscf, scf, fci, tools
-from pyscf.dmrgscf.dmrgci import DMRGCI, DMRGSCF
+try:
+    from pyscf.dmrgscf.dmrgci import DMRGCI, DMRGSCF
+except ImportError:           # dmrgscf is an optional pyscf add-on; degrade gracefully
+    DMRGCI = DMRGSCF = None
 sys.path.append('./')
 from . import molden_reader_nikola_pyscf as pymldreader
 import numpy as np
@@ -520,7 +523,7 @@ def _fcisolver_uses_state_index(fcisolver):
     such as DMRG (``pyscf.dmrgscf``) and SHCI (``pyscf.shciscf``) store their
     wavefunctions on disk and expect an integer state index instead.
     """
-    if isinstance(fcisolver, DMRGCI):
+    if DMRGCI is not None and isinstance(fcisolver, DMRGCI):
         return True
     cls = type(fcisolver)
     module = getattr(cls, '__module__', '') or ''
@@ -555,6 +558,61 @@ def _basis_map(C_target, C_native, S):
     return C_target.T @ S @ C_native
 
 
+def _classify_pyscf_obj(obj):
+    """Identify the kind of PySCF method object so the correct RDM call is used.
+
+    Returns one of:
+      'casscf'    - CASCI / CASSCF / DMRG-SCF / SHCI-SCF: an active space driven by
+                    an ``fcisolver``. Active-space RDMs are taken from the fcisolver
+                    and embedded into the full MO space (core + active).
+      'fci'       - a standalone FCI solver over the full orbital set.
+      'ccsd'      - coupled cluster (RCCSD/UCCSD/CCSD(T) density): separate
+                    ``make_rdm1`` / ``make_rdm2`` (no ``make_rdm12``).
+      'rdm12'     - any other object exposing a combined ``make_rdm12``.
+      'rdm1_rdm2' - any other object exposing separate ``make_rdm1`` + ``make_rdm2``.
+
+    Detection is by duck typing + module names (not hard ``isinstance``) so optional
+    add-ons (dmrgscf, shciscf) need not be importable.
+    """
+    name = type(obj).__name__
+    module = type(obj).__module__ or ''
+    # CAS family: an active space (ncas/nelecas/ncore) with a CI/DMRG/SHCI fcisolver.
+    # Covers CASCI, CASSCF, and DMRG-SCF/SHCI-SCF (which are CASSCF with a custom solver).
+    if all(hasattr(obj, a) for a in ('fcisolver', 'ncas', 'nelecas', 'ncore')):
+        return 'casscf'
+    # Coupled cluster (all live under pyscf.cc); has make_rdm1/2 + the ao_repr kwarg.
+    if module.startswith('pyscf.cc') or 'CCSD' in name.upper():
+        return 'ccsd'
+    # Standalone FCI solver.
+    if module.startswith('pyscf.fci') and hasattr(obj, 'make_rdm12'):
+        return 'fci'
+    # Generic fallbacks.
+    if hasattr(obj, 'make_rdm12'):
+        return 'rdm12'
+    if hasattr(obj, 'make_rdm1') and hasattr(obj, 'make_rdm2'):
+        return 'rdm1_rdm2'
+    raise TypeError(
+        f"Unsupported pyscf object '{module}.{name}'. Expected a CAS (CASCI/CASSCF/"
+        "DMRG-SCF/SHCI-SCF), FCI, or CCSD object, or one exposing make_rdm12 or "
+        "make_rdm1+make_rdm2."
+    )
+
+
+def _call_make_rdm(fn):
+    """Call ``make_rdm1``/``make_rdm2`` in the MO basis.
+
+    Methods like CCSD accept ``ao_repr`` (and *can* return the AO-basis RDM with
+    ``ao_repr=True``); here we force the MO basis (``ao_repr=False``) so the result
+    matches the ``mo_coeff`` returned alongside it — the AO transform is done later
+    by ``mo2ao.create_Zcotr``/``create_Zonerdm``. Methods without the kwarg are
+    called bare.
+    """
+    try:
+        return fn(ao_repr=False)
+    except TypeError:
+        return fn()
+
+
 def _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type):
     """Resolve the MO set and RDMs consistent with ``orbital_type``.
 
@@ -563,46 +621,44 @@ def _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type):
     ``dm2`` expressed in that exact basis.
     """
 
-    is_FCI_like = ("<class 'pyscf.fci.FCI.<locals>.CISolver'>" in str(type(pyscf_obj.fcisolver)))
+    kind = _classify_pyscf_obj(pyscf_obj)
+    is_casscf_like = (kind == 'casscf')
 
-    is_casscf_like = hasattr(pyscf_obj, 'fcisolver') and hasattr(pyscf_obj, 'ci')
-    is_ccsd_like = (
-        not is_casscf_like
-        and hasattr(pyscf_obj, 'make_rdm1')
-        and hasattr(pyscf_obj, 'make_rdm2')
-    )
-    if not (is_casscf_like or is_ccsd_like):
-        raise TypeError(
-            "Unsupported pyscf_obj type. Expected a CASSCF/DMRG-SCF object or a CCSD object."
-        )
-
-    if is_casscf_like:
-        is_FCI = is_FCI_like
+    if kind == 'casscf':
+        # Active-space RDMs from the fcisolver, embedded into the full MO space.
         native_mo_coeff = pyscf_obj.mo_coeff
         native_mo_occ = getattr(pyscf_obj, 'mo_occ', None)
         native_mo_energy = getattr(pyscf_obj, 'mo_energy', None)
-        nelecas = pyscf_obj.nelecas
-        ncas = pyscf_obj.ncas
-        ncore = pyscf_obj.ncore
+        ncas, nelecas, ncore = pyscf_obj.ncas, pyscf_obj.nelecas, pyscf_obj.ncore
         nmo = native_mo_coeff.shape[1]
-        if _fcisolver_uses_state_index(pyscf_obj.fcisolver):
-            casdm1, casdm2 = pyscf_obj.fcisolver.make_rdm12(0, ncas, nelecas)
+        fs = pyscf_obj.fcisolver
+        if _fcisolver_uses_state_index(fs):
+            # DMRG / SHCI keep the wavefunction on disk: make_rdm12(state, norb, nelec)
+            casdm1, casdm2 = fs.make_rdm12(0, ncas, nelecas)
         else:
-            casdm1, casdm2 = pyscf_obj.fcisolver.make_rdm12(pyscf_obj.ci, ncas, nelecas)
+            # default FCI solver: make_rdm12(civec, norb, nelec)
+            casdm1, casdm2 = fs.make_rdm12(pyscf_obj.ci, ncas, nelecas)
         dm1, dm2 = makerdm._make_rdm12_on_mo(casdm1, casdm2, ncore, ncas, nmo)
 
-    if is_FCI_like:
-        dm1, dm2 = pyscf_obj.make_rdm12(pyscf_obj.ci, pyscf_obj.ncas, pyscf_obj.nelecas)
-    else:
+    elif kind == 'fci':
+        # Standalone FCI over the full mf orbital set.
         native_mo_coeff = mf.mo_coeff
         native_mo_occ = getattr(mf, 'mo_occ', None)
         native_mo_energy = getattr(mf, 'mo_energy', None)
-        try:
-            dm1 = pyscf_obj.make_rdm1(ao_repr=False)
-            dm2 = pyscf_obj.make_rdm2(ao_repr=False)
-        except TypeError:
-            dm1 = pyscf_obj.make_rdm1()
-            dm2 = pyscf_obj.make_rdm2()
+        norb = getattr(pyscf_obj, 'norb', native_mo_coeff.shape[1])
+        nelec = getattr(pyscf_obj, 'nelec', mf.mol.nelec)
+        dm1, dm2 = pyscf_obj.make_rdm12(pyscf_obj.ci, norb, nelec)
+
+    else:
+        # CCSD / combined-make_rdm12 / separate-make_rdm1+2: RDMs in the mf MO basis.
+        native_mo_coeff = mf.mo_coeff
+        native_mo_occ = getattr(mf, 'mo_occ', None)
+        native_mo_energy = getattr(mf, 'mo_energy', None)
+        if kind == 'rdm12':
+            dm1, dm2 = pyscf_obj.make_rdm12()
+        else:  # 'ccsd' or 'rdm1_rdm2'
+            dm1 = _call_make_rdm(pyscf_obj.make_rdm1)
+            dm2 = _call_make_rdm(pyscf_obj.make_rdm2)
 
     mol = mf.mol
     ot = (orbital_type or '').lower()
