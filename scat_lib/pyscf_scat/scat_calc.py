@@ -613,8 +613,31 @@ def _call_make_rdm(fn):
         return fn()
 
 
-def _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type):
+def _select_civec(ci, state):
+    """Pick the CI vector for electronic ``state``.
+
+    ``ci`` is a single array for a single-root solve, or a list/tuple of roots for
+    an ``nroots>1`` / state-averaged solve. Raises if ``state`` is out of range, or
+    if an excited ``state`` is requested from a single-root object.
+    """
+    if isinstance(ci, (list, tuple)):
+        if not 0 <= state < len(ci):
+            raise ValueError(f"state={state} requested but only {len(ci)} CI root(s) available.")
+        return ci[state]
+    if state != 0:
+        raise ValueError(
+            f"state={state} requested but this object holds a single CI root; rerun the "
+            "solver with nroots>state (or state averaging) to access excited states."
+        )
+    return ci
+
+
+def _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type, state=0):
     """Resolve the MO set and RDMs consistent with ``orbital_type``.
+
+    ``state`` selects the electronic state (0 = ground) for methods that expose
+    multiple roots (CAS with nroots>1 / state averaging, DMRG/SHCI, FCI); it is
+    distinct from the legacy ``state1/2/3`` options that feed the Fortran CI path.
 
     Returns a dict with ``mo_coeff``, ``mo_occ``, ``mo_energy`` describing the
     orbital basis that must be written to the molden file, plus ``dm1`` and
@@ -634,10 +657,10 @@ def _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type):
         fs = pyscf_obj.fcisolver
         if _fcisolver_uses_state_index(fs):
             # DMRG / SHCI keep the wavefunction on disk: make_rdm12(state, norb, nelec)
-            casdm1, casdm2 = fs.make_rdm12(0, ncas, nelecas)
+            casdm1, casdm2 = fs.make_rdm12(state, ncas, nelecas)
         else:
             # default FCI solver: make_rdm12(civec, norb, nelec)
-            casdm1, casdm2 = fs.make_rdm12(pyscf_obj.ci, ncas, nelecas)
+            casdm1, casdm2 = fs.make_rdm12(_select_civec(pyscf_obj.ci, state), ncas, nelecas)
         dm1, dm2 = makerdm._make_rdm12_on_mo(casdm1, casdm2, ncore, ncas, nmo)
 
     elif kind == 'fci':
@@ -647,10 +670,15 @@ def _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type):
         native_mo_energy = getattr(mf, 'mo_energy', None)
         norb = getattr(pyscf_obj, 'norb', native_mo_coeff.shape[1])
         nelec = getattr(pyscf_obj, 'nelec', mf.mol.nelec)
-        dm1, dm2 = pyscf_obj.make_rdm12(pyscf_obj.ci, norb, nelec)
+        dm1, dm2 = pyscf_obj.make_rdm12(_select_civec(pyscf_obj.ci, state), norb, nelec)
 
     else:
         # CCSD / combined-make_rdm12 / separate-make_rdm1+2: RDMs in the mf MO basis.
+        if state != 0:
+            raise ValueError(
+                f"state={state}: excited-state RDMs are not supported for '{kind}' objects "
+                "(ground/reference state only)."
+            )
         native_mo_coeff = mf.mo_coeff
         native_mo_occ = getattr(mf, 'mo_occ', None)
         native_mo_energy = getattr(mf, 'mo_energy', None)
@@ -756,6 +784,7 @@ def run_scattering_pyscf(
         state1 = 1,
         state2 = 1,
         state3 = 1,
+        state = 0,          # electronic-state index for the RDMs (0=ground)
         **kwargs
         ):
 
@@ -811,7 +840,7 @@ def run_scattering_pyscf(
         An array of intensity values at the corresponding q
     """
     is_FCI = ("<class 'pyscf.fci.FCI.<locals>.CISolver'>" in str(type(pyscf_obj.fcisolver)))
-    info = _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type)
+    info = _resolve_mos_and_rdms(pyscf_obj, mf, orbital_type, state=state)
     dm1 = info['dm1']
     dm2 = info['dm2']
     mo_coeff = info['mo_coeff']
